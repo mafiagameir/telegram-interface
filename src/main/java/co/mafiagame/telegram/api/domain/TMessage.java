@@ -21,7 +21,7 @@ package co.mafiagame.telegram.api.domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @author Esa Hekmatizadeh
+ * @author hekmatof
  */
 public class TMessage {
     @JsonProperty("message_id")

@@ -36,7 +36,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
 /**
- * @author Esa Hekmatizadeh
+ * @author hekmatof
  */
 @Component
 public class CommandHandler {

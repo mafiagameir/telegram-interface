@@ -40,7 +40,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * @author Esa Hekmatizadeh
+ * @author hekmatof
  */
 @Component
 public class TelegramChannel implements InterfaceChannel {

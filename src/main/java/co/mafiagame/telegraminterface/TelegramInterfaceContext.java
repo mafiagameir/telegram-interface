@@ -23,7 +23,7 @@ import co.mafiagame.common.domain.InterfaceType;
 import co.mafiagame.common.domain.result.ChannelType;
 
 /**
- * @author Esa Hekmatizadeh
+ * @author hekmatof
  */
 public class TelegramInterfaceContext implements InterfaceContext {
     private Integer roomId;

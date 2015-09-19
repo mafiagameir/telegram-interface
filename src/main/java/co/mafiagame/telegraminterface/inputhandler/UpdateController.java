@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @author Esa Hekmatizadeh
+ * @author hekmatof
  */
 @RestController
 public class UpdateController {

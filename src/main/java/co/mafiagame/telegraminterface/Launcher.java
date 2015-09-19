@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 
 /**
- * @author Esa Hekmatizadeh
+ * @author hekmatof
  */
 public class Launcher {
     private static final Logger logger = LoggerFactory.getLogger(Launcher.class);

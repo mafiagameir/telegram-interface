@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @author Esa Hekmatizadeh
+ * @author hekmatof
  */
 public class TChat {
     private Integer id;

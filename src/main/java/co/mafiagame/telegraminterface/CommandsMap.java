@@ -21,7 +21,7 @@ package co.mafiagame.telegraminterface;
 import static co.mafiagame.common.Constants.CMD;
 
 /**
- * @author Esa Hekmatizadeh
+ * @author hekmatof
  */
 @Deprecated
 public class CommandsMap {
