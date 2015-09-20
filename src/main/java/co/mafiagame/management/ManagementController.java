@@ -19,10 +19,13 @@
 package co.mafiagame.management;
 
 import co.mafiagame.engine.api.ManagementApi;
+import co.mafiagame.engine.domain.Game;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.stream.Collectors;
 
 /**
  * @author hekmatof
@@ -35,7 +38,7 @@ public class ManagementController {
 
     @RequestMapping("/games")
     public ResponseEntity games() {
-        return ResponseEntity.ok(managementApi.getGames());
+        return ResponseEntity.ok(managementApi.getGames().stream().map(Game::toString).collect(Collectors.toList()));
     }
 
     @RequestMapping("/stashedgames")
