@@ -52,6 +52,9 @@ public class CommandHandler {
                 roomContainer.getRoomId(update.getMessage().getFrom().getUsername()),
                 update.getMessage().getFrom().getId(),
                 update.getMessage().getChat().getChannelType());
+        if (ic.getRoomId() == null)
+            ((TelegramInterfaceContext) ic).setRoomId(update.getMessage().getChat().getId());
+
         if (!validateUsername(update, (TelegramInterfaceContext) ic))
             return;
         String msg = update.getMessage().getText();
