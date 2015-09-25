@@ -55,6 +55,8 @@ public class CommandHandler {
         if (!validateUsername(update, (TelegramInterfaceContext) ic))
             return;
         String msg = update.getMessage().getText();
+        if (msg == null)
+            return;
         try {
             if (msg.startsWith("/")) {
                 String command = getCommand(msg);
@@ -110,7 +112,7 @@ public class CommandHandler {
             case Constants.CMD.REGISTER:
                 ((TelegramInterfaceContext) ic).setRoomId(roomId);
                 roomContainer.put(user.getUsername(), roomId);
-                gameApi.register(ic, user.getUsername(),user.getFirstName(),user.getLastName());
+                gameApi.register(ic, user.getUsername(), user.getFirstName(), user.getLastName());
                 break;
             case Constants.CMD.VOTE:
                 gameApi.vote(ic, user.getUsername(), Arrays.asList(args));
