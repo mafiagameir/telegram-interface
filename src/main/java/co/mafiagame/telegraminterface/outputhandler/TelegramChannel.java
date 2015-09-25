@@ -50,9 +50,10 @@ public class TelegramChannel implements InterfaceChannel {
     private String telegramUrl;
     @Value("${mafia.telegram.token}")
     private String telegramToken;
-    private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private RoomContainer roomContainer;
+
+    private final String url = telegramUrl + telegramToken + "/sendMessage";
 
     @Override
     public void send(ResultMessage resultMessage) {
@@ -70,10 +71,10 @@ public class TelegramChannel implements InterfaceChannel {
 
     }
 
-    public SendMessageResult send(String url) {
-        for (int i = 0; i < 10; i++) {
+    public SendMessageResult send(SendMessage message) {
+        for (int i = 0; i < 2; i++) {
             try {
-                return restTemplate.getForObject(url, SendMessageResult.class);
+                return restTemplate.postForObject(url, message, SendMessageResult.class);
             } catch (Exception e) {
                 logger.warn("can't send message " + url, e);
                 logger.info("wait 1 second for next try...");
@@ -93,7 +94,8 @@ public class TelegramChannel implements InterfaceChannel {
             chatId = ic.getIntRoomId() == null ? Integer.valueOf(msg.getReceiverId()) : ic.getIntRoomId();
         if (channelType == ChannelType.USER_PRIVATE)
             chatId = Integer.valueOf(msg.getReceiverId());
-        String url = telegramUrl + telegramToken + "/sendMessage?chat_id=" + chatId;
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
         String mentions = "";
         if (msg.getOptions().size() > 0) {
             TReplyKeyboardMarkup replyKeyboardMarkup = new TReplyKeyboardMarkup();
@@ -102,12 +104,12 @@ public class TelegramChannel implements InterfaceChannel {
             else
                 mentions = String.join(" ", msg.getToUsers().stream().map(u -> "@" + u).collect(Collectors.toList()));
             replyKeyboardMarkup.addOptions(msg.getOptions());
-            url += "&reply_markup=" + objectMapper.writeValueAsString(replyKeyboardMarkup);
+            sendMessage.setReplyMarkup(replyKeyboardMarkup);
         }
 
         String msgStr = mentions + "\n" + MessageHolder.get(msg.getMessageCode(), msg.getArgs());
-        url += "&text=" + msgStr;
-        SendMessageResult sendMessageResult = send(url);
+        sendMessage.setText(msgStr);
+        SendMessageResult sendMessageResult = send(sendMessage);
         if (!sendMessageResult.isOk())
             logger.error(
                     "telegram failed to send message {} to chatId {} with errorCode {}: {}",
