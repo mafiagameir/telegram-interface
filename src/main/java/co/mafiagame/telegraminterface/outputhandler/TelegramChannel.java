@@ -28,14 +28,19 @@ import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import co.mafiagame.telegraminterface.message.MessageHolder;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -57,6 +62,17 @@ public class TelegramChannel implements InterfaceChannel {
     @PostConstruct
     private void init() {
         this.url = telegramUrl + telegramToken + "/sendMessage";
+        restTemplate.setErrorHandler(new ResponseErrorHandler() {
+            @Override
+            public boolean hasError(ClientHttpResponse response) throws IOException {
+                return response.getStatusCode().equals(HttpStatus.OK);
+            }
+
+            @Override
+            public void handleError(ClientHttpResponse response) throws IOException {
+                logger.error(IOUtils.toString(response.getBody()));
+            }
+        });
     }
 
     @Override
@@ -69,7 +85,7 @@ public class TelegramChannel implements InterfaceChannel {
             try {
                 sendMessage(msg, resultMessage.getChannelType(), ic);
             } catch (Exception e) {
-                logger.error("error sending message {} to interfaceContext {}", msg, ic, e);
+                logger.error("error sending message " + msg + " to interfaceContext " + ic, e);
             }
         }
     }
@@ -95,6 +111,7 @@ public class TelegramChannel implements InterfaceChannel {
 
         String msgStr = mentions + "\n" + MessageHolder.get(msg.getMessageCode(), msg.getArgs());
         sendMessage.setText(msgStr);
+
         SendMessageResult sendMessageResult = restTemplate.postForObject(url, sendMessage, SendMessageResult.class);
         if (!sendMessageResult.isOk())
             logger.error(
@@ -144,6 +161,16 @@ public class TelegramChannel implements InterfaceChannel {
 
         public void setResult(TMessage result) {
             this.result = result;
+        }
+
+        @Override
+        public String toString() {
+            return "SendMessageResult{" +
+                    "ok=" + ok +
+                    ", errorCode=" + errorCode +
+                    ", description='" + description + '\'' +
+                    ", result=" + result +
+                    '}';
         }
     }
 
