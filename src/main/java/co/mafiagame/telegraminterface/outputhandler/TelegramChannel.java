@@ -28,7 +28,6 @@ import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import co.mafiagame.telegraminterface.message.MessageHolder;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.PostConstruct;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,8 +52,12 @@ public class TelegramChannel implements InterfaceChannel {
     private String telegramToken;
     @Autowired
     private RoomContainer roomContainer;
+    private String url;
 
-    private final String url = telegramUrl + telegramToken + "/sendMessage";
+    @PostConstruct
+    private void init() {
+        this.url = telegramUrl + telegramToken + "/sendMessage";
+    }
 
     @Override
     public void send(ResultMessage resultMessage) {
@@ -85,7 +89,7 @@ public class TelegramChannel implements InterfaceChannel {
                 }
             }
         }
-        throw new RuntimeException("can't send message after 10 try " + url);
+        throw new RuntimeException("can't send message after 2 try " + url);
     }
 
     public void sendMessage(Message msg, ChannelType channelType, TelegramInterfaceContext ic) throws Exception {
