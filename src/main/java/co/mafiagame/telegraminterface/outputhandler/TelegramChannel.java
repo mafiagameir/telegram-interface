@@ -65,7 +65,7 @@ public class TelegramChannel implements InterfaceChannel {
         restTemplate.setErrorHandler(new ResponseErrorHandler() {
             @Override
             public boolean hasError(ClientHttpResponse response) throws IOException {
-                return response.getStatusCode().equals(HttpStatus.OK);
+                return !response.getStatusCode().equals(HttpStatus.OK);
             }
 
             @Override
@@ -93,7 +93,7 @@ public class TelegramChannel implements InterfaceChannel {
     public void sendMessage(Message msg, ChannelType channelType, TelegramInterfaceContext ic) throws Exception {
         Integer chatId = null;
         if (channelType == ChannelType.GENERAL)
-            chatId = ic.getIntRoomId() == null ? Integer.valueOf(msg.getReceiverId()) : ic.getIntRoomId();
+            chatId = ic.getIntRoomId();
         if (channelType == ChannelType.USER_PRIVATE)
             chatId = Integer.valueOf(msg.getReceiverId());
         SendMessage sendMessage = new SendMessage();
