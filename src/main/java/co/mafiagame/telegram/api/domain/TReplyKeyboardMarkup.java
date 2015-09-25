@@ -19,7 +19,6 @@
 package co.mafiagame.telegram.api.domain;
 
 import co.mafiagame.common.domain.result.Option;
-import co.mafiagame.telegraminterface.CommandsMap;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
@@ -43,10 +42,7 @@ public class TReplyKeyboardMarkup {
             this.getKeyboard().add(
                     options.stream().skip(skipSize)
                             .limit(3L)
-                            .map(o ->
-                                            "/" + CommandsMap.getFaCommand(o.getCommand()) +
-                                                    " " + o.getArg()
-                            )
+                            .map(o -> "/" + o.getCommand() + " " + o.getArg())
                             .collect(Collectors.toList()));
             skipSize += 3L;
         }

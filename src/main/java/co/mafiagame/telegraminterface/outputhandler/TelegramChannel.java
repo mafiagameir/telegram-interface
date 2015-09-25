@@ -70,6 +70,23 @@ public class TelegramChannel implements InterfaceChannel {
 
     }
 
+    public SendMessageResult send(String url) {
+        for (int i = 0; i < 10; i++) {
+            try {
+                return restTemplate.getForObject(url, SendMessageResult.class);
+            } catch (Exception e) {
+                logger.warn("can't send message " + url, e);
+                logger.info("wait 1 second for next try...");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                    logger.error(e.getMessage(), e1);
+                }
+            }
+        }
+        throw new RuntimeException("can't send message after 10 try " + url);
+    }
+
     public void sendMessage(Message msg, ChannelType channelType, TelegramInterfaceContext ic) throws Exception {
         Integer chatId = null;
         if (channelType == ChannelType.GENERAL)
@@ -90,7 +107,7 @@ public class TelegramChannel implements InterfaceChannel {
 
         String msgStr = mentions + "\n" + MessageHolder.get(msg.getMessageCode(), msg.getArgs());
         url += "&text=" + msgStr;
-        SendMessageResult sendMessageResult = restTemplate.getForObject(url, SendMessageResult.class);
+        SendMessageResult sendMessageResult = send(url);
         if (!sendMessageResult.isOk())
             logger.error(
                     "telegram failed to send message {} to chatId {} with errorCode {}: {}",
