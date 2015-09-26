@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class TReplyKeyboardMarkup {
     private List<List<String>> keyboard = new ArrayList<>();
     @JsonProperty("resize_keyboard")
-    private boolean resizeKeyboard = true;
+    private boolean resizeKeyboard = false;
     @JsonProperty("one_time_keyboar")
     private boolean oneTimeKeyboard = true;
     private boolean selective = true;
