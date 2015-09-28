@@ -91,13 +91,11 @@ public class TelegramChannel implements InterfaceChannel {
     }
 
     public void sendMessage(Message msg, ChannelType channelType, TelegramInterfaceContext ic) throws Exception {
-        Integer chatId = null;
-        if (channelType == ChannelType.GENERAL)
-            chatId = ic.getIntRoomId();
-        if (channelType == ChannelType.USER_PRIVATE)
-            chatId = Integer.valueOf(msg.getReceiverId());
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
+        if (channelType == ChannelType.GENERAL)
+            sendMessage.setChatId(ic.getIntRoomId());
+        if (channelType == ChannelType.USER_PRIVATE)
+            sendMessage.setChatId(Integer.valueOf(msg.getReceiverId()));
         String mentions = "";
         if (msg.getOptions().size() > 0) {
             TReplyKeyboardMarkup replyKeyboardMarkup = new TReplyKeyboardMarkup();
@@ -108,15 +106,10 @@ public class TelegramChannel implements InterfaceChannel {
             replyKeyboardMarkup.addOptions(msg.getOptions());
             sendMessage.setReplyMarkup(replyKeyboardMarkup);
         }
-
         String msgStr = mentions + "\n" + MessageHolder.get(msg.getMessageCode(), msg.getArgs());
         sendMessage.setText(msgStr);
+        restTemplate.postForObject(url, sendMessage, SendMessageResult.class);
 
-        SendMessageResult sendMessageResult = restTemplate.postForObject(url, sendMessage, SendMessageResult.class);
-        if (!sendMessageResult.isOk())
-            logger.error(
-                    "telegram failed to send message {} to chatId {} with errorCode {}: {}",
-                    msgStr, chatId, sendMessageResult.getErrorCode(), sendMessageResult.getDescription());
     }
 
     @Override
