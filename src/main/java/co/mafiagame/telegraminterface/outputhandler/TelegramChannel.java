@@ -22,6 +22,8 @@ import co.mafiagame.common.channel.InterfaceChannel;
 import co.mafiagame.common.domain.result.ChannelType;
 import co.mafiagame.common.domain.result.Message;
 import co.mafiagame.common.domain.result.ResultMessage;
+import co.mafiagame.exception.BotHasNotAccessException;
+import co.mafiagame.exception.CouldNotSendMessageException;
 import co.mafiagame.telegram.api.domain.TMessage;
 import co.mafiagame.telegram.api.domain.TReplyKeyboardMarkup;
 import co.mafiagame.telegraminterface.RoomContainer;
@@ -70,7 +72,10 @@ public class TelegramChannel implements InterfaceChannel {
 
             @Override
             public void handleError(ClientHttpResponse response) throws IOException {
+                if (IOUtils.toString(response.getBody()).contains("PEER_ID_INVALID"))
+                    throw new BotHasNotAccessException();
                 logger.error(IOUtils.toString(response.getBody()));
+                throw new CouldNotSendMessageException();
             }
         });
     }
@@ -84,6 +89,12 @@ public class TelegramChannel implements InterfaceChannel {
         for (Message msg : resultMessage.getMessages()) {
             try {
                 sendMessage(msg, resultMessage.getChannelType(), ic);
+            } catch (BotHasNotAccessException e) {
+                logger.warn("user");
+                send(new ResultMessage(
+                        new Message("bot.has.not.access", msg.getReceiverId(),
+                                msg.getReceiverUserName(), msg.getReceiverUserName()),
+                        ChannelType.GENERAL, ic));
             } catch (Exception e) {
                 logger.error("error sending message " + msg + " to interfaceContext " + ic, e);
             }

@@ -29,11 +29,13 @@ public class TelegramInterfaceContext implements InterfaceContext {
     private Integer roomId;
     private final ChannelType senderType;
     private final Integer userId;
+    private final String userName;
 
-    public TelegramInterfaceContext(Integer roomId, Integer userId, ChannelType senderType) {
+    public TelegramInterfaceContext(Integer roomId, Integer userId, String userName, ChannelType senderType) {
         this.roomId = roomId;
         this.senderType = senderType;
         this.userId = userId;
+        this.userName = userName;
     }
 
     public void setRoomId(Integer roomId) {
@@ -42,6 +44,11 @@ public class TelegramInterfaceContext implements InterfaceContext {
 
     public String getUserId() {
         return String.valueOf(userId);
+    }
+
+    @Override
+    public String getUserName() {
+        return userName;
     }
 
     public Integer getUserIdInt() {
@@ -88,6 +95,7 @@ public class TelegramInterfaceContext implements InterfaceContext {
                 "roomId=" + roomId +
                 ", senderType=" + senderType +
                 ", userId=" + userId +
+                ", userName='" + userName + '\'' +
                 '}';
     }
 }
