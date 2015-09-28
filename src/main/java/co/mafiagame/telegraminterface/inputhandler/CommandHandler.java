@@ -89,7 +89,8 @@ public class CommandHandler {
                 Constants.CMD.MAFIA_VOTE,
                 Constants.CMD.START_STASHED_GAME,
                 Constants.CMD.WHO_IS_PLAYING,
-                Constants.CMD.HELP
+                Constants.CMD.HELP,
+                Constants.CMD.WHAT_IS_MY_ROLE
         ).filter(pureMessage::startsWith).findFirst().get();
     }
 
@@ -113,8 +114,8 @@ public class CommandHandler {
                 roomContainer.put(user.getUsername(), roomId);
                 if (args.length < 4) {
                     interfaceChannel.send(
-                            new ResultMessage(new Message("welcome.message",ic.getUserId(),ic.getUserName()),
-                            ic.getSenderType(),ic));
+                            new ResultMessage(new Message("welcome.message", ic.getUserId(), ic.getUserName()),
+                                    ic.getSenderType(), ic));
                 } else {
                     gameApi.startStashedGame(ic, Integer.valueOf(args[0]), Integer.valueOf(args[1]),
                             Integer.valueOf(args[2]), Integer.valueOf(args[3]));
@@ -136,6 +137,9 @@ public class CommandHandler {
                 break;
             case Constants.CMD.WHO_IS_PLAYING:
                 gameApi.whoIsPlaying(ic);
+                break;
+            case Constants.CMD.WHAT_IS_MY_ROLE:
+                gameApi.whatIsMyRole(ic);
                 break;
             case Constants.CMD.MAFIA_VOTE:
                 gameApi.mafiaKillVote(ic, user.getUsername(), args[0]);
