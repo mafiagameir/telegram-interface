@@ -27,9 +27,12 @@ import co.mafiagame.common.domain.result.ChannelType;
  */
 public class TelegramInterfaceContext implements InterfaceContext {
     private Integer roomId;
-    private final ChannelType senderType;
-    private final Integer userId;
-    private final String userName;
+    private ChannelType senderType;
+    private Integer userId;
+    private String userName;
+
+    public TelegramInterfaceContext() {
+    }
 
     public TelegramInterfaceContext(Integer roomId, Integer userId, String userName, ChannelType senderType) {
         this.roomId = roomId;
