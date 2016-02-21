@@ -28,7 +28,7 @@ import co.mafiagame.telegram.api.domain.TMessage;
 import co.mafiagame.telegram.api.domain.TReplyKeyboardMarkup;
 import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
-import co.mafiagame.telegraminterface.message.MessageHolder;
+import co.mafiagame.common.utils.MessageHolder;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
