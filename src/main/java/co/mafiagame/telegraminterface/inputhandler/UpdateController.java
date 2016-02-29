@@ -88,7 +88,7 @@ public class UpdateController {
                         commandHandler.handle(update);
                         offset = update.getId();
                     });
-        }, 20, 1, TimeUnit.SECONDS);
+        }, 20, 2, TimeUnit.SECONDS);
     }
 
     @RequestMapping(value = "/{token}/update", method = RequestMethod.POST)
