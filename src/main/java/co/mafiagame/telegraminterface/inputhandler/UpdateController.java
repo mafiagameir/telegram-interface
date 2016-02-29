@@ -81,13 +81,14 @@ public class UpdateController {
             TResult tResult = restTemplate.getForObject(telegramUrl + telegramToken + "/getUpdates",
                     TResult.class,
                     httpParams);
-            tResult.getResult().stream().
-                    filter(update -> offset < update.getId())
-                    .forEach(update -> {
-                        logger.info("receive: {}", update);
-                        commandHandler.handle(update);
-                        offset = update.getId();
-                    });
+            for (TUpdate update : tResult.getResult()) {
+                if (offset < update.getId()) {
+                    logger.info("receive: {}", update);
+                    commandHandler.handle(update);
+                    offset = update.getId();
+                    logger.info("offset set to {}", offset);
+                }
+            }
         }, 100, 1, TimeUnit.SECONDS);
     }
 
