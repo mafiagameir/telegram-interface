@@ -20,24 +20,25 @@ package co.mafiagame.telegraminterface.inputhandler;
 
 import co.mafiagame.telegram.api.domain.TResult;
 import co.mafiagame.telegram.api.domain.TUpdate;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.client.ResponseErrorHandler;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -53,38 +54,40 @@ public class UpdateController {
     private String telegramToken;
     @Value("${mafia.telegram.api.url}")
     private String telegramUrl;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
     private volatile int offset = 1;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @PostConstruct
     public void init() {
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        HttpClient httpClient = new HttpClient();
-        HttpMethod get = new GetMethod(telegramUrl + telegramToken + "/getUpdates");
+        restTemplate.setErrorHandler(new ResponseErrorHandler() {
+            @Override
+            public boolean hasError(ClientHttpResponse clientHttpResponse) throws IOException {
+                return !clientHttpResponse.getStatusCode().equals(HttpStatus.OK);
+            }
+
+            @Override
+            public void handleError(ClientHttpResponse clientHttpResponse) throws IOException {
+                logger.error("error calling telegram getUpdate\n code:{}\n{}",
+                        clientHttpResponse.getStatusCode(),
+                        IOUtils.toString(clientHttpResponse.getBody()));
+            }
+        });
+        Map<String, String> httpParams = new HashMap<>();
         ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(1);
         executorService.setMaximumPoolSize(1);
         executorService.scheduleAtFixedRate(() -> {
-            get.setQueryString(new NameValuePair[]{
-                    new NameValuePair("offset", String.valueOf(offset)),
-                    new NameValuePair("limit", "10")
-            });
-            try {
-                int status = httpClient.executeMethod(get);
-                if (status != 200)
-                    logger.error("error calling telegram getUpdate\n code:{}\n{}", status, get.getResponseBodyAsString());
-                TResult tResult = objectMapper.readValue(get.getResponseBodyAsStream(), TResult.class);
-                tResult.getResult().stream().
-                        filter(update -> offset < update.getId())
-                        .forEach(update -> {
-                            logger.info("receive: {}", update);
-                            commandHandler.handle(update);
-                            offset = update.getId();
-                        });
-            } catch (IOException e) {
-                logger.error("error calling telegram getUpdate: {}", e.getMessage(), e);
-            } finally {
-                get.releaseConnection();
-            }
+            httpParams.put("offset", String.valueOf(offset));
+            httpParams.put("limit", "10");
+            TResult tResult = restTemplate.getForObject(telegramUrl + telegramToken + "/getUpdates",
+                    TResult.class,
+                    httpParams);
+            tResult.getResult().stream().
+                    filter(update -> offset < update.getId())
+                    .forEach(update -> {
+                        logger.info("receive: {}", update);
+                        commandHandler.handle(update);
+                        offset = update.getId();
+                    });
         }, 0, 1, TimeUnit.SECONDS);
     }
 
