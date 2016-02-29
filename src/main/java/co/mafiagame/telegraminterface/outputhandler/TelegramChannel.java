@@ -87,8 +87,10 @@ public class TelegramChannel implements InterfaceChannel {
         executorService.scheduleAtFixedRate(() -> {
             SendMessage sendMessage = null;
             try {
-                sendMessage = outQueue.take();
-                restTemplate.postForObject(url, sendMessage, SendMessageResult.class);
+                if (!outQueue.isEmpty()) {
+                    sendMessage = outQueue.take();
+                    restTemplate.postForObject(url, sendMessage, SendMessageResult.class);
+                }
             } catch (InterruptedException e) {
             } catch (Exception e) {
                 logger.error("error sending message " + sendMessage, e);
