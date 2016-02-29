@@ -64,7 +64,7 @@ public class TelegramChannel implements InterfaceChannel {
     @Autowired
     private RoomContainer roomContainer;
     private String url;
-    private BlockingQueue<SendMessage> outQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<SendMessage> outQueue = new LinkedBlockingQueue<>();
 
     @PostConstruct
     private void init() {
@@ -96,7 +96,7 @@ public class TelegramChannel implements InterfaceChannel {
             } catch (Exception e) {
                 logger.error("error sending message " + sendMessage, e);
             }
-        }, 20, 1, TimeUnit.SECONDS);
+        }, 100, 2, TimeUnit.SECONDS);
     }
 
     @Override
