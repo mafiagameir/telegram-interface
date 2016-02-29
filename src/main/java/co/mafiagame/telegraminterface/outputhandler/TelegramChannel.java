@@ -22,13 +22,13 @@ import co.mafiagame.common.channel.InterfaceChannel;
 import co.mafiagame.common.domain.result.ChannelType;
 import co.mafiagame.common.domain.result.Message;
 import co.mafiagame.common.domain.result.ResultMessage;
+import co.mafiagame.common.utils.MessageHolder;
 import co.mafiagame.exception.BotHasNotAccessException;
 import co.mafiagame.exception.CouldNotSendMessageException;
 import co.mafiagame.telegram.api.domain.TMessage;
 import co.mafiagame.telegram.api.domain.TReplyKeyboardMarkup;
 import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
-import co.mafiagame.common.utils.MessageHolder;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -44,6 +44,10 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -60,6 +64,7 @@ public class TelegramChannel implements InterfaceChannel {
     @Autowired
     private RoomContainer roomContainer;
     private String url;
+    private BlockingQueue<SendMessage> outQueue = new LinkedBlockingQueue<>();
 
     @PostConstruct
     private void init() {
@@ -78,30 +83,30 @@ public class TelegramChannel implements InterfaceChannel {
                 throw new CouldNotSendMessageException();
             }
         });
+        ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(1);
+        executorService.scheduleAtFixedRate(() -> {
+            SendMessage sendMessage = null;
+            try {
+                sendMessage = outQueue.take();
+                restTemplate.postForObject(url, sendMessage, SendMessageResult.class);
+            } catch (InterruptedException e) {
+            } catch (Exception e) {
+                logger.error("error sending message " + sendMessage, e);
+            }
+        }, 5, 1, TimeUnit.SECONDS);
     }
 
     @Override
     public void send(ResultMessage resultMessage) {
         if (resultMessage.getChannelType() == ChannelType.NONE)
             return;
-
         TelegramInterfaceContext ic = (TelegramInterfaceContext) resultMessage.getIc();
         for (Message msg : resultMessage.getMessages()) {
-            try {
-                sendMessage(msg, resultMessage.getChannelType(), ic);
-            } catch (BotHasNotAccessException e) {
-                logger.warn("user");
-                send(new ResultMessage(
-                        new Message("bot.has.not.access", msg.getReceiverId(),
-                                msg.getReceiverUserName(), msg.getReceiverUserName()),
-                        ChannelType.GENERAL, ic));
-            } catch (Exception e) {
-                logger.error("error sending message " + msg + " to interfaceContext " + ic, e);
-            }
+            sendMessage(msg, resultMessage.getChannelType(), ic);
         }
     }
 
-    public void sendMessage(Message msg, ChannelType channelType, TelegramInterfaceContext ic) throws Exception {
+    public void sendMessage(Message msg, ChannelType channelType, TelegramInterfaceContext ic) {
         SendMessage sendMessage = new SendMessage();
         if (channelType == ChannelType.GENERAL)
             sendMessage.setChatId(ic.getIntRoomId());
@@ -119,8 +124,11 @@ public class TelegramChannel implements InterfaceChannel {
         }
         String msgStr = mentions + "\n" + MessageHolder.get(msg.getMessageCode(), msg.getArgs());
         sendMessage.setText(msgStr);
-        restTemplate.postForObject(url, sendMessage, SendMessageResult.class);
-
+        try {
+            outQueue.put(sendMessage);
+        } catch (InterruptedException e) {
+            logger.error("could not put into outQueue: " + sendMessage, e);
+        }
     }
 
     @Override
@@ -177,5 +185,4 @@ public class TelegramChannel implements InterfaceChannel {
                     '}';
         }
     }
-
 }

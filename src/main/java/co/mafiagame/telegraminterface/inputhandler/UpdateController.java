@@ -73,17 +73,19 @@ public class UpdateController {
                 if (status != 200)
                     logger.error("error calling telegram getUpdate\n code:{}\n{}", status, get.getResponseBodyAsString());
                 TResult tResult = objectMapper.readValue(get.getResponseBodyAsStream(), TResult.class);
-                for (TUpdate update : tResult.getResult()) {
-                    logger.info("receive: {}", update);
-                    commandHandler.handle(update);
-                    offset = update.getId();
-                }
+                tResult.getResult().stream().
+                        filter(update -> offset < update.getId())
+                        .forEach(update -> {
+                            logger.info("receive: {}", update);
+                            commandHandler.handle(update);
+                            offset = update.getId();
+                        });
             } catch (IOException e) {
                 logger.error("error calling telegram getUpdate: {}", e.getMessage(), e);
             } finally {
                 get.releaseConnection();
             }
-        }, 0, 5, TimeUnit.SECONDS);
+        }, 0, 1, TimeUnit.SECONDS);
     }
 
     @RequestMapping(value = "/{token}/update", method = RequestMethod.POST)
