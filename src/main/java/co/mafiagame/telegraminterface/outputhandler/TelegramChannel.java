@@ -92,10 +92,11 @@ public class TelegramChannel implements InterfaceChannel {
                     restTemplate.postForObject(url, sendMessage, SendMessageResult.class);
                 }
             } catch (InterruptedException e) {
+                logger.error("error in reading outQueue", e);
             } catch (Exception e) {
                 logger.error("error sending message " + sendMessage, e);
             }
-        }, 5, 1, TimeUnit.SECONDS);
+        }, 20, 1, TimeUnit.SECONDS);
     }
 
     @Override
