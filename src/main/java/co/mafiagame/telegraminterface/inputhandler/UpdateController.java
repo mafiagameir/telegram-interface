@@ -75,7 +75,7 @@ public class UpdateController {
         Map<String, String> httpParams = new HashMap<>();
         ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(1);
         executorService.setMaximumPoolSize(1);
-        executorService.scheduleAtFixedRate(() -> {
+        executorService.scheduleWithFixedDelay(() -> {
             httpParams.put("offset", String.valueOf(offset));
             httpParams.put("limit", "10");
             TResult tResult = restTemplate.getForObject(telegramUrl + telegramToken + "/getUpdates",
@@ -88,7 +88,7 @@ public class UpdateController {
                         commandHandler.handle(update);
                         offset = update.getId();
                     });
-        }, 100, 2, TimeUnit.SECONDS);
+        }, 100, 1, TimeUnit.SECONDS);
     }
 
     @RequestMapping(value = "/{token}/update", method = RequestMethod.POST)

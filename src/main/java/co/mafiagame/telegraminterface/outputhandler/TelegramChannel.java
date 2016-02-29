@@ -84,7 +84,7 @@ public class TelegramChannel implements InterfaceChannel {
             }
         });
         ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(1);
-        executorService.scheduleAtFixedRate(() -> {
+        executorService.scheduleWithFixedDelay(() -> {
             SendMessage sendMessage = null;
             try {
                 if (!outQueue.isEmpty()) {
@@ -96,7 +96,7 @@ public class TelegramChannel implements InterfaceChannel {
             } catch (Exception e) {
                 logger.error("error sending message " + sendMessage, e);
             }
-        }, 100, 2, TimeUnit.SECONDS);
+        }, 100, 1, TimeUnit.SECONDS);
     }
 
     @Override
