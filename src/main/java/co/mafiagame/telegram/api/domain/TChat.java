@@ -33,6 +33,7 @@ public class TChat {
     private String lastName;
     private String username;
     private String title;
+    private String type;
 
     @JsonIgnore
     public ChannelType getChannelType() {
@@ -79,6 +80,14 @@ public class TChat {
         this.title = title;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     @Override
     public String toString() {
         return "TChat{" +
@@ -87,6 +96,7 @@ public class TChat {
                 ", lastName='" + lastName + '\'' +
                 ", username='" + username + '\'' +
                 ", title='" + title + '\'' +
+                ", type='" + type + '\'' +
                 '}';
     }
 }
