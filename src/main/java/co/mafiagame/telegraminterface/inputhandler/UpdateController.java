@@ -42,6 +42,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author hekmatof
@@ -55,7 +56,7 @@ public class UpdateController {
     private String telegramToken;
     @Value("${mafia.telegram.api.url}")
     private String telegramUrl;
-    private volatile int offset = 1;
+    private final AtomicLong offset = new AtomicLong(1);
     private final RestTemplate restTemplate = new RestTemplate();
 
     @PostConstruct
@@ -66,17 +67,19 @@ public class UpdateController {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                httpParams.put("offset", String.valueOf(offset));
+                httpParams.put("offset", String.valueOf(offset.get()));
                 httpParams.put("limit", "10");
                 TResult tResult = restTemplate.getForObject(telegramUrl + telegramToken + "/getUpdates",
                         TResult.class,
                         httpParams);
                 for (TUpdate update : tResult.getResult()) {
-                    if (offset < update.getId()) {
-                        logger.info("receive: {}", update);
-                        commandHandler.handle(update);
-                        offset = update.getId();
-                        logger.info("offset set to {}", offset);
+                    synchronized (offset) {
+                        if (offset.get() < update.getId()) {
+                            logger.info("receive: {}", update);
+                            commandHandler.handle(update);
+                            offset.set(update.getId());
+                            logger.info("offset set to {}", offset);
+                        }
                     }
                 }
             }
