@@ -37,9 +37,10 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -59,6 +60,31 @@ public class UpdateController {
 
     @PostConstruct
     public void init() {
+        setErrorHandler();
+        Map<String, String> httpParams = new ConcurrentHashMap<>();
+        Timer timer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                httpParams.put("offset", String.valueOf(offset));
+                httpParams.put("limit", "10");
+                TResult tResult = restTemplate.getForObject(telegramUrl + telegramToken + "/getUpdates",
+                        TResult.class,
+                        httpParams);
+                for (TUpdate update : tResult.getResult()) {
+                    if (offset < update.getId()) {
+                        logger.info("receive: {}", update);
+                        commandHandler.handle(update);
+                        offset = update.getId();
+                        logger.info("offset set to {}", offset);
+                    }
+                }
+            }
+        };
+        timer.schedule(timerTask, TimeUnit.MINUTES.toMillis(1), TimeUnit.SECONDS.toMillis(2));
+    }
+
+    private void setErrorHandler() {
         restTemplate.setErrorHandler(new ResponseErrorHandler() {
             @Override
             public boolean hasError(ClientHttpResponse clientHttpResponse) throws IOException {
@@ -72,24 +98,6 @@ public class UpdateController {
                         IOUtils.toString(clientHttpResponse.getBody()));
             }
         });
-        Map<String, String> httpParams = new HashMap<>();
-        ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(1);
-        executorService.setMaximumPoolSize(1);
-        executorService.scheduleWithFixedDelay(() -> {
-            httpParams.put("offset", String.valueOf(offset));
-            httpParams.put("limit", "10");
-            TResult tResult = restTemplate.getForObject(telegramUrl + telegramToken + "/getUpdates",
-                    TResult.class,
-                    httpParams);
-            for (TUpdate update : tResult.getResult()) {
-                if (offset < update.getId()) {
-                    logger.info("receive: {}", update);
-                    commandHandler.handle(update);
-                    offset = update.getId();
-                    logger.info("offset set to {}", offset);
-                }
-            }
-        }, 100, 1, TimeUnit.SECONDS);
     }
 
     @RequestMapping(value = "/{token}/update", method = RequestMethod.POST)

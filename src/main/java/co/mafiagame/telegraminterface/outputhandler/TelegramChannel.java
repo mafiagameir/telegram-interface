@@ -44,9 +44,10 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -83,20 +84,24 @@ public class TelegramChannel implements InterfaceChannel {
                 throw new CouldNotSendMessageException();
             }
         });
-        ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(1);
-        executorService.scheduleWithFixedDelay(() -> {
-            SendMessage sendMessage = null;
-            try {
-                if (!outQueue.isEmpty()) {
-                    sendMessage = outQueue.take();
-                    restTemplate.postForObject(url, sendMessage, SendMessageResult.class);
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                SendMessage sendMessage = null;
+                try {
+                    if (!outQueue.isEmpty()) {
+                        sendMessage = outQueue.take();
+                        restTemplate.postForObject(url, sendMessage, SendMessageResult.class);
+                    }
+                } catch (InterruptedException e) {
+                    logger.error("error in reading outQueue", e);
+                } catch (Exception e) {
+                    logger.error("error sending message " + sendMessage, e);
                 }
-            } catch (InterruptedException e) {
-                logger.error("error in reading outQueue", e);
-            } catch (Exception e) {
-                logger.error("error sending message " + sendMessage, e);
             }
-        }, 100, 1, TimeUnit.SECONDS);
+        };
+        Timer timer = new Timer();
+        timer.schedule(timerTask, TimeUnit.MINUTES.toMillis(1), TimeUnit.SECONDS.toMillis(1));
     }
 
     @Override
