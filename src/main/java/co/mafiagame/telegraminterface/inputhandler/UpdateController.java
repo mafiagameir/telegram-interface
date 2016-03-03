@@ -84,7 +84,7 @@ public class UpdateController {
                 }
             }
         };
-        timer.schedule(timerTask, TimeUnit.MINUTES.toMillis(1), TimeUnit.SECONDS.toMillis(5));
+        timer.schedule(timerTask, TimeUnit.MINUTES.toMillis(2), TimeUnit.SECONDS.toMillis(5));
     }
 
     private void setErrorHandler(RestTemplate restTemplate) {
