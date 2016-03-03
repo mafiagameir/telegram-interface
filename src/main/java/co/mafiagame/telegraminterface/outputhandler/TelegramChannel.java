@@ -91,6 +91,7 @@ public class TelegramChannel implements InterfaceChannel {
                 try {
                     if (!outQueue.isEmpty()) {
                         sendMessage = outQueue.take();
+                        logger.info("deliver {}", sendMessage);
                         restTemplate.postForObject(url, sendMessage, SendMessageResult.class);
                     }
                 } catch (InterruptedException e) {
