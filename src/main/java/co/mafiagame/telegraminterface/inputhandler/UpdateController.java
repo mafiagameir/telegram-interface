@@ -57,16 +57,16 @@ public class UpdateController {
     @Value("${mafia.telegram.api.url}")
     private String telegramUrl;
     private final AtomicLong offset = new AtomicLong(1);
-    private final RestTemplate restTemplate = new RestTemplate();
 
     @PostConstruct
     public void init() {
-        setErrorHandler();
-        Map<String, String> httpParams = new ConcurrentHashMap<>();
         Timer timer = new Timer();
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
+                Map<String, String> httpParams = new ConcurrentHashMap<>();
+                RestTemplate restTemplate = new RestTemplate();
+                setErrorHandler(restTemplate);
                 httpParams.put("offset", String.valueOf(offset.get() + 1));
                 httpParams.put("limit", "10");
                 TResult tResult = restTemplate.getForObject(telegramUrl + telegramToken + "/getUpdates",
@@ -84,10 +84,10 @@ public class UpdateController {
                 }
             }
         };
-        timer.schedule(timerTask, TimeUnit.MINUTES.toMillis(1), TimeUnit.SECONDS.toMillis(2));
+        timer.schedule(timerTask, TimeUnit.MINUTES.toMillis(1), TimeUnit.SECONDS.toMillis(5));
     }
 
-    private void setErrorHandler() {
+    private void setErrorHandler(RestTemplate restTemplate) {
         restTemplate.setErrorHandler(new ResponseErrorHandler() {
             @Override
             public boolean hasError(ClientHttpResponse clientHttpResponse) throws IOException {
