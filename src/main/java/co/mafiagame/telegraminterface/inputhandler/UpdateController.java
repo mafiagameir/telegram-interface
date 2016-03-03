@@ -59,21 +59,25 @@ public class UpdateController {
                 long offset = 1;
                 Thread.sleep(TimeUnit.MINUTES.toMillis(2));
                 while (true) {
-                    RestTemplate restTemplate = new RestTemplate();
-                    setErrorHandler(restTemplate);
-                    logger.info("get request with offset {}", offset + 1);
-                    TResult tResult = restTemplate.getForObject(
-                            telegramUrl + telegramToken + "/getUpdates?offset=" + String.valueOf(offset + 1),
-                            TResult.class);
-                    for (TUpdate update : tResult.getResult()) {
-                        if (offset < update.getId()) {
-                            logger.info("receive: {}", update);
-                            commandHandler.handle(update);
-                            offset = update.getId();
-                            logger.info("offset set to {}", offset);
+                    try {
+                        RestTemplate restTemplate = new RestTemplate();
+                        setErrorHandler(restTemplate);
+                        logger.info("get request with offset {}", offset + 1);
+                        TResult tResult = restTemplate.getForObject(
+                                telegramUrl + telegramToken + "/getUpdates?offset=" + String.valueOf(offset + 1),
+                                TResult.class);
+                        for (TUpdate update : tResult.getResult()) {
+                            if (offset < update.getId()) {
+                                logger.info("receive: {}", update);
+                                commandHandler.handle(update);
+                                offset = update.getId();
+                                logger.info("offset set to {}", offset);
+                            }
                         }
+                        Thread.sleep(TimeUnit.SECONDS.toMillis(3));
+                    } catch (Exception e) {
+                        logger.error(e.getMessage(), e);
                     }
-                    Thread.sleep(TimeUnit.SECONDS.toMillis(3));
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
