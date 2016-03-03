@@ -39,7 +39,6 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -61,30 +60,34 @@ public class UpdateController {
     @PostConstruct
     public void init() {
         Timer timer = new Timer();
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                Map<String, String> httpParams = new ConcurrentHashMap<>();
-                RestTemplate restTemplate = new RestTemplate();
-                setErrorHandler(restTemplate);
-                httpParams.put("offset", String.valueOf(offset.get() + 1));
-                httpParams.put("limit", "20");
-                TResult tResult = restTemplate.getForObject(telegramUrl + telegramToken + "/getUpdates",
-                        TResult.class,
-                        httpParams);
-                for (TUpdate update : tResult.getResult()) {
-                    synchronized (offset) {
-                        if (offset.get() < update.getId()) {
-                            logger.info("receive: {}", update);
-                            commandHandler.handle(update);
-                            offset.set(update.getId());
-                            logger.info("offset set to {}", offset);
+        Thread thread = new Thread(() -> {
+            try {
+                Thread.sleep(TimeUnit.MINUTES.toMillis(2));
+                while (true) {
+                    Map<String, String> httpParams = new ConcurrentHashMap<>();
+                    RestTemplate restTemplate = new RestTemplate();
+                    setErrorHandler(restTemplate);
+                    httpParams.put("offset", String.valueOf(offset.get() + 1));
+                    httpParams.put("limit", "20");
+                    TResult tResult = restTemplate.getForObject(telegramUrl + telegramToken + "/getUpdates",
+                            TResult.class,
+                            httpParams);
+                    for (TUpdate update : tResult.getResult()) {
+                        synchronized (offset) {
+                            if (offset.get() < update.getId()) {
+                                logger.info("receive: {}", update);
+                                commandHandler.handle(update);
+                                offset.set(update.getId());
+                                logger.info("offset set to {}", offset);
+                            }
                         }
                     }
+                    Thread.sleep(TimeUnit.SECONDS.toMillis(3));
                 }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        };
-        timer.schedule(timerTask, TimeUnit.MINUTES.toMillis(2), TimeUnit.SECONDS.toMillis(5));
+        });
     }
 
     private void setErrorHandler(RestTemplate restTemplate) {
