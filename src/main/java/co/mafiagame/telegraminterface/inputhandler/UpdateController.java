@@ -67,7 +67,7 @@ public class UpdateController {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                httpParams.put("offset", String.valueOf(offset.get()));
+                httpParams.put("offset", String.valueOf(offset.incrementAndGet()));
                 httpParams.put("limit", "10");
                 TResult tResult = restTemplate.getForObject(telegramUrl + telegramToken + "/getUpdates",
                         TResult.class,
