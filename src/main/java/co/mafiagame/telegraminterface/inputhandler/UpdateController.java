@@ -69,6 +69,7 @@ public class UpdateController {
                     setErrorHandler(restTemplate);
                     httpParams.put("offset", String.valueOf(offset.get() + 1));
                     httpParams.put("limit", "20");
+                    logger.info("get request with offset {}",offset.get() +1);
                     TResult tResult = restTemplate.getForObject(telegramUrl + telegramToken + "/getUpdates",
                             TResult.class,
                             httpParams);
