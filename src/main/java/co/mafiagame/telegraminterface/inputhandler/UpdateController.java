@@ -37,11 +37,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Timer;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author hekmatof
@@ -55,32 +51,26 @@ public class UpdateController {
     private String telegramToken;
     @Value("${mafia.telegram.api.url}")
     private String telegramUrl;
-    private final AtomicLong offset = new AtomicLong(1);
 
     @PostConstruct
     public void init() {
-        Timer timer = new Timer();
         Thread thread = new Thread(() -> {
             try {
+                long offset = 1;
                 Thread.sleep(TimeUnit.MINUTES.toMillis(2));
                 while (true) {
-                    Map<String, String> httpParams = new ConcurrentHashMap<>();
                     RestTemplate restTemplate = new RestTemplate();
                     setErrorHandler(restTemplate);
-                    httpParams.put("offset", String.valueOf(offset.get() + 1));
-                    httpParams.put("limit", "20");
-                    logger.info("get request with offset {}",offset.get() +1);
-                    TResult tResult = restTemplate.getForObject(telegramUrl + telegramToken + "/getUpdates",
-                            TResult.class,
-                            httpParams);
+                    logger.info("get request with offset {}", offset + 1);
+                    TResult tResult = restTemplate.getForObject(
+                            telegramUrl + telegramToken + "/getUpdates?offset=" + String.valueOf(offset + 1),
+                            TResult.class);
                     for (TUpdate update : tResult.getResult()) {
-                        synchronized (offset) {
-                            if (offset.get() < update.getId()) {
-                                logger.info("receive: {}", update);
-                                commandHandler.handle(update);
-                                offset.set(update.getId());
-                                logger.info("offset set to {}", offset);
-                            }
+                        if (offset < update.getId()) {
+                            logger.info("receive: {}", update);
+                            commandHandler.handle(update);
+                            offset = update.getId();
+                            logger.info("offset set to {}", offset);
                         }
                     }
                     Thread.sleep(TimeUnit.SECONDS.toMillis(3));
