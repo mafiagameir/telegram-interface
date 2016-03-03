@@ -88,6 +88,7 @@ public class UpdateController {
                 e.printStackTrace();
             }
         });
+        thread.start();
     }
 
     private void setErrorHandler(RestTemplate restTemplate) {
