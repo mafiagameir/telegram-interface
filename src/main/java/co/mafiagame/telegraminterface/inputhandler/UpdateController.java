@@ -62,7 +62,7 @@ public class UpdateController {
                     try {
                         RestTemplate restTemplate = new RestTemplate();
                         setErrorHandler(restTemplate);
-                        logger.info("get request with offset {}", offset + 1);
+                        logger.debug("get request with offset {}", offset + 1);
                         TResult tResult = restTemplate.getForObject(
                                 telegramUrl + telegramToken + "/getUpdates?offset=" + String.valueOf(offset + 1),
                                 TResult.class);
