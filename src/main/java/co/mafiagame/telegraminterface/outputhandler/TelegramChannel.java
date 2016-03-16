@@ -119,7 +119,7 @@ public class TelegramChannel implements InterfaceChannel {
         if (channelType == ChannelType.GENERAL)
             sendMessage.setChatId(ic.getIntRoomId());
         if (channelType == ChannelType.USER_PRIVATE)
-            sendMessage.setChatId(Integer.valueOf(msg.getReceiverId()));
+            sendMessage.setChatId(Long.valueOf(msg.getReceiverId()));
         String mentions = "";
         if (msg.getOptions().size() > 0) {
             TReplyKeyboardMarkup replyKeyboardMarkup = new TReplyKeyboardMarkup();

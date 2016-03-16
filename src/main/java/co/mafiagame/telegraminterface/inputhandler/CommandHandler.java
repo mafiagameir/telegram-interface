@@ -107,7 +107,7 @@ public class CommandHandler {
         return true;
     }
 
-    private void handle(InterfaceContext ic, Integer roomId, TChat user, String command, String[] args) {
+    private void handle(InterfaceContext ic, Long roomId, TChat user, String command, String[] args) {
         switch (command) {
             case Constants.CMD.START_STASHED_GAME:
                 ((TelegramInterfaceContext) ic).setRoomId(roomId);

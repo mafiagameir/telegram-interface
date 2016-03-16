@@ -8,16 +8,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class SendMessage {
     @JsonProperty("chat_id")
-    private Integer chatId;
+    private Long chatId;
     private String text;
     @JsonProperty("reply_markup")
     private TReplyKeyboardMarkup replyMarkup;
 
-    public Integer getChatId() {
+    public Long getChatId() {
         return chatId;
     }
 
-    public void setChatId(Integer chatId) {
+    public void setChatId(Long chatId) {
         this.chatId = chatId;
     }
 

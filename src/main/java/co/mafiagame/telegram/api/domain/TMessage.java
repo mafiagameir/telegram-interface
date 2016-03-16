@@ -25,17 +25,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class TMessage {
     @JsonProperty("message_id")
-    private Integer id;
+    private Long id;
     private TChat from;
     private Integer date;
     private TChat chat;
     private String text;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

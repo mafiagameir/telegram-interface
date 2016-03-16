@@ -25,14 +25,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class TUpdate {
     @JsonProperty("update_id")
-    private Integer id;
+    private Long id;
     private TMessage message;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

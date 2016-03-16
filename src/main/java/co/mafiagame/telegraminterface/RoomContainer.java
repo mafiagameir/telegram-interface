@@ -29,13 +29,13 @@ import java.util.Map;
 @Component
 public class RoomContainer {
 
-    private Map<String, Integer> userRoomsMap = new HashMap<>();
+    private Map<String, Long> userRoomsMap = new HashMap<>();
 
-    public Integer getRoomId(String username) {
+    public Long getRoomId(String username) {
         return userRoomsMap.get(username);
     }
 
-    public void put(String username, Integer roomId) {
+    public void put(String username, Long roomId) {
         userRoomsMap.put(username, roomId);
     }
 

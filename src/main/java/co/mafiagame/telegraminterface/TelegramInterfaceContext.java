@@ -26,22 +26,22 @@ import co.mafiagame.common.domain.result.ChannelType;
  * @author hekmatof
  */
 public class TelegramInterfaceContext implements InterfaceContext {
-    private Integer roomId;
+    private Long roomId;
     private ChannelType senderType;
-    private Integer userId;
+    private Long userId;
     private String userName;
 
     public TelegramInterfaceContext() {
     }
 
-    public TelegramInterfaceContext(Integer roomId, Integer userId, String userName, ChannelType senderType) {
+    public TelegramInterfaceContext(Long roomId, Long userId, String userName, ChannelType senderType) {
         this.roomId = roomId;
         this.senderType = senderType;
         this.userId = userId;
         this.userName = userName;
     }
 
-    public void setRoomId(Integer roomId) {
+    public void setRoomId(Long roomId) {
         this.roomId = roomId;
     }
 
@@ -54,7 +54,7 @@ public class TelegramInterfaceContext implements InterfaceContext {
         return userName;
     }
 
-    public Integer getUserIdInt() {
+    public Long getUserIdInt() {
         return userId;
     }
 
@@ -62,7 +62,7 @@ public class TelegramInterfaceContext implements InterfaceContext {
         return String.valueOf(roomId);
     }
 
-    public Integer getIntRoomId() {
+    public Long getIntRoomId() {
         return roomId;
     }
 
