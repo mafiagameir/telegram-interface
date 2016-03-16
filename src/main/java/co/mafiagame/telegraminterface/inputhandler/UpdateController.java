@@ -37,12 +37,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author hekmatof
@@ -56,38 +51,42 @@ public class UpdateController {
     private String telegramToken;
     @Value("${mafia.telegram.api.url}")
     private String telegramUrl;
-    private final AtomicLong offset = new AtomicLong(1);
-    private final RestTemplate restTemplate = new RestTemplate();
 
     @PostConstruct
     public void init() {
-        setErrorHandler();
-        Map<String, String> httpParams = new ConcurrentHashMap<>();
-        Timer timer = new Timer();
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                httpParams.put("offset", String.valueOf(offset.get()));
-                httpParams.put("limit", "10");
-                TResult tResult = restTemplate.getForObject(telegramUrl + telegramToken + "/getUpdates",
-                        TResult.class,
-                        httpParams);
-                for (TUpdate update : tResult.getResult()) {
-                    synchronized (offset) {
-                        if (offset.get() < update.getId()) {
-                            logger.info("receive: {}", update);
-                            commandHandler.handle(update);
-                            offset.set(update.getId());
-                            logger.info("offset set to {}", offset);
+        Thread thread = new Thread(() -> {
+            try {
+                long offset = 1;
+                Thread.sleep(TimeUnit.MINUTES.toMillis(2));
+                while (true) {
+                    try {
+                        RestTemplate restTemplate = new RestTemplate();
+                        setErrorHandler(restTemplate);
+                        //logger.debug("get request with offset {}", offset + 1);
+                        TResult tResult = restTemplate.getForObject(
+                                telegramUrl + telegramToken + "/getUpdates?offset=" + String.valueOf(offset + 1),
+                                TResult.class);
+                        for (TUpdate update : tResult.getResult()) {
+                            if (offset < update.getId()) {
+                                logger.info("receive: {}", update);
+                                commandHandler.handle(update);
+                                offset = update.getId();
+                                logger.info("offset set to {}", offset);
+                            }
                         }
+                        Thread.sleep(TimeUnit.SECONDS.toMillis(3));
+                    } catch (Exception e) {
+                        logger.error(e.getMessage(), e);
                     }
                 }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        };
-        timer.schedule(timerTask, TimeUnit.MINUTES.toMillis(1), TimeUnit.SECONDS.toMillis(2));
+        });
+        thread.start();
     }
 
-    private void setErrorHandler() {
+    private void setErrorHandler(RestTemplate restTemplate) {
         restTemplate.setErrorHandler(new ResponseErrorHandler() {
             @Override
             public boolean hasError(ClientHttpResponse clientHttpResponse) throws IOException {
