@@ -3,6 +3,9 @@ package co.mafiagame.telegraminterface.outputhandler;
 import co.mafiagame.telegram.api.domain.TReplyKeyboardMarkup;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Esa Hekmatizadeh
  */
@@ -19,6 +22,14 @@ public class SendMessage {
 
     public void setChatId(Long chatId) {
         this.chatId = chatId;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("chat_id", chatId);
+        result.put("text", text);
+        result.put("reply_markup", replyMarkup);
+        return result;
     }
 
     public String getText() {
