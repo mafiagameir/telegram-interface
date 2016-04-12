@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResponseErrorHandler;
@@ -96,7 +97,10 @@ public class TelegramChannel implements InterfaceChannel {
                         logger.info("deliver {}", sendMessage);
                         Map<String, Object> params = sendMessage.toMap();
                         logger.info("deliver param {}", params);
-                        SendMessageResult sendMessageResult = restTemplate.postForObject(url, sendMessage, SendMessageResult.class, params);
+                        ResponseEntity<SendMessageResult> sendMessageResultResponseEntity =
+                                restTemplate.postForEntity(url, sendMessage, SendMessageResult.class, params);
+                        logger.info("result:{}", sendMessageResultResponseEntity);
+                        SendMessageResult sendMessageResult = sendMessageResultResponseEntity.getBody();
                         if (!sendMessageResult.isOk()) {
                             logger.error("could not send message: {}", sendMessageResult);
                             throw new CouldNotSendMessageException();
