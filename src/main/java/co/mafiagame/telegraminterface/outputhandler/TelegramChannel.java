@@ -75,13 +75,13 @@ public class TelegramChannel implements InterfaceChannel {
         restTemplate.setErrorHandler(new ResponseErrorHandler() {
             @Override
             public boolean hasError(ClientHttpResponse response) throws IOException {
-                return !response.getStatusCode().equals(HttpStatus.OK);
+                return !response.getStatusCode().equals(HttpStatus.OK)
+                        && IOUtils.toString(response.getBody()).contains("PEER_ID_INVALID");
             }
 
             @Override
             public void handleError(ClientHttpResponse response) throws IOException {
-                if (IOUtils.toString(response.getBody()).contains("PEER_ID_INVALID"))
-                    throw new BotHasNotAccessException();
+                throw new BotHasNotAccessException();
                 //logger.error(response.getStatusCode().toString() + ":" + response.getStatusText() + ":" + response.getBody());
                 //throw new CouldNotSendMessageException();
             }
@@ -95,10 +95,10 @@ public class TelegramChannel implements InterfaceChannel {
                         sendMessage = outQueue.take();
                         logger.info("deliver {}", sendMessage);
                         Map<String, Object> params = sendMessage.toMap();
-                        logger.info("deliver param {}",params);
+                        logger.info("deliver param {}", params);
                         SendMessageResult sendMessageResult = restTemplate.postForObject(url, sendMessage, SendMessageResult.class, params);
-                        if(!sendMessageResult.isOk()){
-                            logger.error("could not send message: {}",sendMessageResult);
+                        if (!sendMessageResult.isOk()) {
+                            logger.error("could not send message: {}", sendMessageResult);
                             throw new CouldNotSendMessageException();
                         }
                     }
