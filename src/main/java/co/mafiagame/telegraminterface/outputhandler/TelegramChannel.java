@@ -82,8 +82,8 @@ public class TelegramChannel implements InterfaceChannel {
             public void handleError(ClientHttpResponse response) throws IOException {
                 if (IOUtils.toString(response.getBody()).contains("PEER_ID_INVALID"))
                     throw new BotHasNotAccessException();
-                logger.error(response.getStatusCode().toString() + ":" + response.getStatusText());
-                throw new CouldNotSendMessageException();
+                //logger.error(response.getStatusCode().toString() + ":" + response.getStatusText() + ":" + response.getBody());
+                //throw new CouldNotSendMessageException();
             }
         });
         TimerTask timerTask = new TimerTask() {
@@ -95,8 +95,12 @@ public class TelegramChannel implements InterfaceChannel {
                         sendMessage = outQueue.take();
                         logger.info("deliver {}", sendMessage);
                         Map<String, Object> params = sendMessage.toMap();
-                        logger.info("deliver param {},params");
-                        restTemplate.postForObject(url, sendMessage, SendMessageResult.class, params);
+                        logger.info("deliver param {}",params);
+                        SendMessageResult sendMessageResult = restTemplate.postForObject(url, sendMessage, SendMessageResult.class, params);
+                        if(!sendMessageResult.isOk()){
+                            logger.error("could not send message: {}",sendMessageResult);
+                            throw new CouldNotSendMessageException();
+                        }
                     }
                 } catch (RestClientException e) {
                     logger.error("error in sending message: " + e.getMessage(), e);
