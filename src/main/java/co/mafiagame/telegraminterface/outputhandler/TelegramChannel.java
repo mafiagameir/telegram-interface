@@ -30,17 +30,18 @@ import co.mafiagame.telegram.api.domain.TReplyKeyboardMarkup;
 import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResponseErrorHandler;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
@@ -69,6 +70,8 @@ public class TelegramChannel implements InterfaceChannel {
     private RoomContainer roomContainer;
     private String url;
     private final BlockingQueue<SendMessage> outQueue = new LinkedBlockingQueue<>();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final HttpClient client = new HttpClient();
 
     @PostConstruct
     private void init() {
@@ -95,19 +98,17 @@ public class TelegramChannel implements InterfaceChannel {
                     if (!outQueue.isEmpty()) {
                         sendMessage = outQueue.take();
                         logger.info("deliver {}", sendMessage);
-                        Map<String, Object> params = sendMessage.toMap();
-                        logger.info("deliver param {}", params);
-                        ResponseEntity<SendMessageResult> sendMessageResultResponseEntity =
-                                restTemplate.postForEntity(url, sendMessage, SendMessageResult.class, params);
-                        logger.info("result:{}", sendMessageResultResponseEntity);
-                        SendMessageResult sendMessageResult = sendMessageResultResponseEntity.getBody();
-                        if (!sendMessageResult.isOk()) {
-                            logger.error("could not send message: {}", sendMessageResult);
+                        PostMethod postMethod = new PostMethod(url);
+                        postMethod.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                        postMethod.setRequestBody(objectMapper.writeValueAsString(sendMessage));
+                        client.executeMethod(postMethod);
+                        if (postMethod.getStatusCode() != 200) {
+                            logger.error("could not deliver message:{}", postMethod.getResponseBodyAsString());
+                            postMethod.releaseConnection();
                             throw new CouldNotSendMessageException();
                         }
+                        postMethod.releaseConnection();
                     }
-                } catch (RestClientException e) {
-                    logger.error("error in sending message: " + e.getMessage(), e);
                 } catch (InterruptedException e) {
                     logger.error("error in reading outQueue", e);
                 } catch (Exception e) {
