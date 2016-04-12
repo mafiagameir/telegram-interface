@@ -39,6 +39,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResponseErrorHandler;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
@@ -92,8 +93,10 @@ public class TelegramChannel implements InterfaceChannel {
                     if (!outQueue.isEmpty()) {
                         sendMessage = outQueue.take();
                         logger.info("deliver {}", sendMessage);
-                        restTemplate.postForObject(url, sendMessage, SendMessageResult.class,sendMessage.toMap());
+                        restTemplate.postForObject(url, sendMessage, SendMessageResult.class, sendMessage.toMap());
                     }
+                } catch (RestClientException e) {
+                    logger.error("error in sending message: " + e.getMessage(), e);
                 } catch (InterruptedException e) {
                     logger.error("error in reading outQueue", e);
                 } catch (Exception e) {
