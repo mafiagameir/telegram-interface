@@ -44,6 +44,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -81,7 +82,7 @@ public class TelegramChannel implements InterfaceChannel {
             public void handleError(ClientHttpResponse response) throws IOException {
                 if (IOUtils.toString(response.getBody()).contains("PEER_ID_INVALID"))
                     throw new BotHasNotAccessException();
-                logger.error(IOUtils.toString(response.getBody()));
+                logger.error(response.getStatusCode().toString() + ":" + response.getStatusText());
                 throw new CouldNotSendMessageException();
             }
         });
@@ -93,7 +94,9 @@ public class TelegramChannel implements InterfaceChannel {
                     if (!outQueue.isEmpty()) {
                         sendMessage = outQueue.take();
                         logger.info("deliver {}", sendMessage);
-                        restTemplate.postForObject(url, sendMessage, SendMessageResult.class, sendMessage.toMap());
+                        Map<String, Object> params = sendMessage.toMap();
+                        logger.info("deliver param {},params");
+                        restTemplate.postForObject(url, sendMessage, SendMessageResult.class, params);
                     }
                 } catch (RestClientException e) {
                     logger.error("error in sending message: " + e.getMessage(), e);
