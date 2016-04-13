@@ -31,22 +31,20 @@ import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.ResponseErrorHandler;
-import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -61,7 +59,6 @@ import java.util.stream.Collectors;
 @Component
 public class TelegramChannel implements InterfaceChannel {
     private static final Logger logger = LoggerFactory.getLogger(TelegramChannel.class);
-    private final RestTemplate restTemplate = new RestTemplate();
     @Value("${mafia.telegram.api.url}")
     private String telegramUrl;
     @Value("${mafia.telegram.token}")
@@ -71,25 +68,12 @@ public class TelegramChannel implements InterfaceChannel {
     private String url;
     private final BlockingQueue<SendMessage> outQueue = new LinkedBlockingQueue<>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static final HttpClient client = new HttpClient();
+    private static HttpClient client;
 
     @PostConstruct
     private void init() {
+        client = HttpClients.createDefault();
         this.url = telegramUrl + telegramToken + "/sendMessage";
-        restTemplate.setErrorHandler(new ResponseErrorHandler() {
-            @Override
-            public boolean hasError(ClientHttpResponse response) throws IOException {
-                return !response.getStatusCode().equals(HttpStatus.OK)
-                        && IOUtils.toString(response.getBody()).contains("PEER_ID_INVALID");
-            }
-
-            @Override
-            public void handleError(ClientHttpResponse response) throws IOException {
-                throw new BotHasNotAccessException();
-                //logger.error(response.getStatusCode().toString() + ":" + response.getStatusText() + ":" + response.getBody());
-                //throw new CouldNotSendMessageException();
-            }
-        });
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
@@ -98,16 +82,22 @@ public class TelegramChannel implements InterfaceChannel {
                     if (!outQueue.isEmpty()) {
                         sendMessage = outQueue.take();
                         logger.info("deliver {}", sendMessage);
-                        PostMethod postMethod = new PostMethod(url);
-                        postMethod.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
-                        postMethod.setRequestBody(objectMapper.writeValueAsString(sendMessage));
-                        client.executeMethod(postMethod);
-                        if (postMethod.getStatusCode() != 200) {
-                            logger.error("could not deliver message:{}", postMethod.getResponseBodyAsString());
-                            postMethod.releaseConnection();
+                        HttpPost post = new HttpPost(url);
+                        post.setHeader("Content-Type", "application/json; charset=UTF-8");
+                        StringEntity entity = new StringEntity(
+                                objectMapper.writeValueAsString(sendMessage),
+                                ContentType.create("application/json", "UTF-8"));
+                        post.setEntity(entity);
+                        HttpResponse response = client.execute(post);
+                        if (response.getStatusLine().getStatusCode() != 200) {
+                            if (IOUtils.toString(response.getEntity().getContent()).contains("PEER_ID_INVALID"))
+                                throw new BotHasNotAccessException();
+                            logger.error("could not deliver message:{}",
+                                    IOUtils.toString(response.getEntity().getContent()));
+                            post.releaseConnection();
                             throw new CouldNotSendMessageException();
                         }
-                        postMethod.releaseConnection();
+                        post.releaseConnection();
                     }
                 } catch (InterruptedException e) {
                     logger.error("error in reading outQueue", e);
