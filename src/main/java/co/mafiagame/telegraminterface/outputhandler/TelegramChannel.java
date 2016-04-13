@@ -90,7 +90,8 @@ public class TelegramChannel implements InterfaceChannel {
                         post.setEntity(entity);
                         HttpResponse response = client.execute(post);
                         if (response.getStatusLine().getStatusCode() != 200) {
-                            if (IOUtils.toString(response.getEntity().getContent()).contains("PEER_ID_INVALID"))
+                            if (IOUtils.toString(response.getEntity().getContent())
+                                    .contains("PEER_ID_INVALID"))
                                 throw new BotHasNotAccessException();
                             logger.error("could not deliver message:{}",
                                     IOUtils.toString(response.getEntity().getContent()));
