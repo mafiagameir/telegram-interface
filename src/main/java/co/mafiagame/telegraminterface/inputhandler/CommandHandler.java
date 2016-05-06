@@ -90,7 +90,8 @@ public class CommandHandler {
                 Constants.CMD.START_STASHED_GAME,
                 Constants.CMD.WHO_IS_PLAYING,
                 Constants.CMD.HELP,
-                Constants.CMD.WHAT_IS_MY_ROLE
+                Constants.CMD.WHAT_IS_MY_ROLE,
+                Constants.CMD.KILL_ME
         ).filter(pureMessage::startsWith).findFirst().get();
     }
 
@@ -140,6 +141,10 @@ public class CommandHandler {
                 break;
             case Constants.CMD.WHAT_IS_MY_ROLE:
                 gameApi.whatIsMyRole(ic);
+                break;
+            case Constants.CMD.KILL_ME:
+                gameApi.whatIsMyRole(ic);
+                roomContainer.remove(user.getUsername());
                 break;
             case Constants.CMD.MAFIA_VOTE:
                 gameApi.mafiaKillVote(ic, user.getUsername(), args[0]);
