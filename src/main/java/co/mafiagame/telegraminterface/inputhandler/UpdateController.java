@@ -74,7 +74,7 @@ public class UpdateController {
                                 logger.info("offset set to {}", offset);
                             }
                         }
-                        Thread.sleep(TimeUnit.SECONDS.toMillis(3));
+                        Thread.sleep(TimeUnit.MILLISECONDS.toMillis(500));
                     } catch (Exception e) {
                         logger.error(e.getMessage(), e);
                     }

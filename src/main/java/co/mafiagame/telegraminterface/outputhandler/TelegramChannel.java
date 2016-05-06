@@ -108,7 +108,7 @@ public class TelegramChannel implements InterfaceChannel {
             }
         };
         Timer timer = new Timer();
-        timer.schedule(timerTask, TimeUnit.MINUTES.toMillis(1), TimeUnit.SECONDS.toMillis(1));
+        timer.schedule(timerTask, TimeUnit.MINUTES.toMillis(1), TimeUnit.MILLISECONDS.toMillis(200));
     }
 
     @Override
