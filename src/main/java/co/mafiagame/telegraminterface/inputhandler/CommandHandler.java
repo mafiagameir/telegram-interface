@@ -23,9 +23,11 @@ import co.mafiagame.common.channel.InterfaceChannel;
 import co.mafiagame.common.channel.InterfaceContext;
 import co.mafiagame.common.domain.result.Message;
 import co.mafiagame.common.domain.result.ResultMessage;
+import co.mafiagame.common.utils.MessageHolder;
 import co.mafiagame.engine.api.GameApi;
 import co.mafiagame.telegram.api.domain.TChat;
 import co.mafiagame.telegram.api.domain.TUpdate;
+import co.mafiagame.telegraminterface.LangContainer;
 import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,13 +48,17 @@ public class CommandHandler {
     private InterfaceChannel interfaceChannel;
     @Autowired
     private RoomContainer roomContainer;
+    @Autowired
+    private LangContainer langContainer;
 
     public void handle(TUpdate update) {
+        Long roomId = roomContainer.getRoomId(update.getMessage().getFrom().getUsername());
         InterfaceContext ic = new TelegramInterfaceContext(
-                roomContainer.getRoomId(update.getMessage().getFrom().getUsername()),
+                roomId,
                 update.getMessage().getFrom().getId(),
                 update.getMessage().getFrom().getUsername(),
-                update.getMessage().getChat().getChannelType());
+                update.getMessage().getChat().getChannelType(),
+                langContainer.getLang(roomId));
         TelegramInterfaceContext telegramIc = (TelegramInterfaceContext) ic;
         if (telegramIc.getIntRoomId() == null)
             telegramIc.setRoomId(update.getMessage().getChat().getId());
@@ -67,6 +73,11 @@ public class CommandHandler {
                 String command = getCommand(msg);
                 msg = msg.substring(command.length() + 1).trim();
                 String[] args = msg.split(" ");
+                if ("fa".equals(args[0])) {
+                    langContainer.put(telegramIc.getIntRoomId(), MessageHolder.Lang.FA);
+                    telegramIc.setLang(MessageHolder.Lang.FA);
+                    args = Arrays.copyOfRange(args, 1, args.length);
+                }
                 handle(ic, update.getMessage().getChat().getId(),
                         update.getMessage().getFrom(), command, args);
             }

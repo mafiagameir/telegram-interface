@@ -27,6 +27,7 @@ import co.mafiagame.exception.BotHasNotAccessException;
 import co.mafiagame.exception.CouldNotSendMessageException;
 import co.mafiagame.telegram.api.domain.TMessage;
 import co.mafiagame.telegram.api.domain.TReplyKeyboardMarkup;
+import co.mafiagame.telegraminterface.LangContainer;
 import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -69,6 +70,8 @@ public class TelegramChannel implements InterfaceChannel {
     private final BlockingQueue<SendMessage> outQueue = new LinkedBlockingQueue<>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static HttpClient client;
+    @Autowired
+    private LangContainer langContainer;
 
     @PostConstruct
     private void init() {
@@ -133,11 +136,13 @@ public class TelegramChannel implements InterfaceChannel {
             if (msg.getToUsers() == null)
                 replyKeyboardMarkup.setSelective(false);
             else
-                mentions = String.join(" ", msg.getToUsers().stream().map(u -> "@" + u).collect(Collectors.toList()));
+                mentions = String.join(" ", msg.getToUsers().stream()
+                        .map(u -> "@" + u).collect(Collectors.toList()));
             replyKeyboardMarkup.addOptions(msg.getOptions());
             sendMessage.setReplyMarkup(replyKeyboardMarkup);
         }
-        String msgStr = mentions + "\n" + MessageHolder.get(msg.getMessageCode(), msg.getArgs());
+        String msgStr = mentions + "\n" + MessageHolder.get(msg.getMessageCode(),
+                langContainer.getLang(ic.getIntRoomId()), msg.getArgs());
         sendMessage.setText(msgStr);
         try {
             outQueue.put(sendMessage);

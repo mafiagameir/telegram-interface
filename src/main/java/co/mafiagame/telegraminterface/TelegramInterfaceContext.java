@@ -21,6 +21,7 @@ package co.mafiagame.telegraminterface;
 import co.mafiagame.common.channel.InterfaceContext;
 import co.mafiagame.common.domain.InterfaceType;
 import co.mafiagame.common.domain.result.ChannelType;
+import co.mafiagame.common.utils.MessageHolder;
 
 /**
  * @author hekmatof
@@ -30,15 +31,17 @@ public class TelegramInterfaceContext implements InterfaceContext {
     private ChannelType senderType;
     private Long userId;
     private String userName;
+    private MessageHolder.Lang lang = MessageHolder.Lang.EN;
 
     public TelegramInterfaceContext() {
     }
 
-    public TelegramInterfaceContext(Long roomId, Long userId, String userName, ChannelType senderType) {
+    public TelegramInterfaceContext(Long roomId, Long userId, String userName, ChannelType senderType, MessageHolder.Lang lang) {
         this.roomId = roomId;
         this.senderType = senderType;
         this.userId = userId;
         this.userName = userName;
+        this.lang = lang;
     }
 
     public void setRoomId(Long roomId) {
@@ -74,6 +77,14 @@ public class TelegramInterfaceContext implements InterfaceContext {
     @Override
     public ChannelType getSenderType() {
         return senderType;
+    }
+
+    public MessageHolder.Lang getLang() {
+        return lang;
+    }
+
+    public void setLang(MessageHolder.Lang lang) {
+        this.lang = lang;
     }
 
     @Override
