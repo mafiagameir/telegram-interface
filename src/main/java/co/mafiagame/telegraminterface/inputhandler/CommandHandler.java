@@ -73,12 +73,7 @@ public class CommandHandler {
                 String command = getCommand(msg);
                 msg = msg.substring(command.length() + 1).trim();
                 String[] args = msg.split(" ");
-                if ("fa".equals(args[0])) {
-                    langContainer.put(telegramIc.getIntRoomId(), MessageHolder.Lang.FA);
-                    telegramIc.setLang(MessageHolder.Lang.FA);
-                    args = Arrays.copyOfRange(args, 1, args.length);
-                }
-                handle(ic, update.getMessage().getChat().getId(),
+                handle(telegramIc, update.getMessage().getChat().getId(),
                         update.getMessage().getFrom(), command, args);
             }
         } catch (Exception e) {
@@ -102,7 +97,8 @@ public class CommandHandler {
                 Constants.CMD.WHO_IS_PLAYING,
                 Constants.CMD.HELP,
                 Constants.CMD.WHAT_IS_MY_ROLE,
-                Constants.CMD.KILL_ME
+                Constants.CMD.KILL_ME,
+                Constants.CMD.LANG
         ).filter(pureMessage::startsWith).findFirst().get();
     }
 
@@ -119,10 +115,10 @@ public class CommandHandler {
         return true;
     }
 
-    private void handle(InterfaceContext ic, Long roomId, TChat user, String command, String[] args) {
+    private void handle(TelegramInterfaceContext ic, Long roomId, TChat user, String command, String[] args) {
         switch (command) {
             case Constants.CMD.START_STASHED_GAME:
-                ((TelegramInterfaceContext) ic).setRoomId(roomId);
+                ic.setRoomId(roomId);
                 roomContainer.put(user.getUsername(), roomId);
                 if (args.length < 4) {
                     interfaceChannel.send(
@@ -134,7 +130,7 @@ public class CommandHandler {
                 }
                 break;
             case Constants.CMD.REGISTER:
-                ((TelegramInterfaceContext) ic).setRoomId(roomId);
+                ic.setRoomId(roomId);
                 roomContainer.put(user.getUsername(), roomId);
                 gameApi.register(ic, user.getUsername(), user.getFirstName(), user.getLastName());
                 break;
@@ -171,6 +167,15 @@ public class CommandHandler {
                 break;
             case Constants.CMD.CANCEL:
                 gameApi.cancelGame(ic, user.getUsername());
+                break;
+            case Constants.CMD.LANG:
+                if ("fa".equals(args[0])) {
+                    langContainer.put(roomId, MessageHolder.Lang.FA);
+                    ic.setLang(MessageHolder.Lang.FA);
+                } else {
+                    langContainer.put(roomId, MessageHolder.Lang.EN);
+                    ic.setLang(MessageHolder.Lang.EN);
+                }
         }
     }
 
