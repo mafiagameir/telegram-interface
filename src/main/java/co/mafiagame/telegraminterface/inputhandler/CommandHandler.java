@@ -61,7 +61,7 @@ public class CommandHandler {
                 update.getMessage().getFrom().getId(),
                 update.getMessage().getFrom().getUsername(),
                 update.getMessage().getChat().getChannelType(),
-                langContainer.getLang(roomId, ic.getUserId()));
+                langContainer.getLang(roomId, String.valueOf(update.getMessage().getFrom().getId())));
         TelegramInterfaceContext telegramIc = (TelegramInterfaceContext) ic;
         if (telegramIc.getIntRoomId() == null)
             telegramIc.setRoomId(update.getMessage().getChat().getId());
