@@ -25,6 +25,7 @@ import co.mafiagame.common.domain.result.Message;
 import co.mafiagame.common.domain.result.ResultMessage;
 import co.mafiagame.common.utils.MessageHolder;
 import co.mafiagame.engine.api.GameApi;
+import co.mafiagame.persistence.api.PersistenceApi;
 import co.mafiagame.telegram.api.domain.TChat;
 import co.mafiagame.telegram.api.domain.TUpdate;
 import co.mafiagame.telegraminterface.LangContainer;
@@ -50,6 +51,8 @@ public class CommandHandler {
     private RoomContainer roomContainer;
     @Autowired
     private LangContainer langContainer;
+    @Autowired
+    private PersistenceApi persistenceApi;
 
     public void handle(TUpdate update) {
         Long roomId = roomContainer.getRoomId(update.getMessage().getFrom().getUsername());
@@ -58,11 +61,10 @@ public class CommandHandler {
                 update.getMessage().getFrom().getId(),
                 update.getMessage().getFrom().getUsername(),
                 update.getMessage().getChat().getChannelType(),
-                langContainer.getLang(roomId));
+                langContainer.getLang(roomId, ic.getUserId()));
         TelegramInterfaceContext telegramIc = (TelegramInterfaceContext) ic;
         if (telegramIc.getIntRoomId() == null)
             telegramIc.setRoomId(update.getMessage().getChat().getId());
-
         if (!validateUsername(update, telegramIc))
             return;
         String msg = update.getMessage().getText();
@@ -79,7 +81,6 @@ public class CommandHandler {
         } catch (Exception e) {
             gameApi.commandNotFound(ic);
         }
-
     }
 
     private String getCommand(String message) throws NoSuchElementException {
@@ -169,14 +170,18 @@ public class CommandHandler {
                 gameApi.cancelGame(ic, user.getUsername());
                 break;
             case Constants.CMD.LANG:
-                if ("fa".equals(args[0])) {
-                    langContainer.put(roomId, MessageHolder.Lang.FA);
-                    ic.setLang(MessageHolder.Lang.FA);
+                if (args.length < 1) {
+                    interfaceChannel.send(new ResultMessage(
+                            new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
+                            ic.getSenderType(), ic));
                 } else {
-                    langContainer.put(roomId, MessageHolder.Lang.EN);
-                    ic.setLang(MessageHolder.Lang.EN);
+                    langContainer.put(roomId, MessageHolder.Lang.valueOf(args[0].toUpperCase()));
+                    ic.setLang(MessageHolder.Lang.valueOf(args[0].toUpperCase()));
+                    persistenceApi.setLang(ic.getUserId(), MessageHolder.Lang.valueOf(args[0].toUpperCase()));
+                    interfaceChannel.send(new ResultMessage(
+                            new Message("language.changed", ic.getUserId(), ic.getUserName(), MessageHolder.Lang.valueOf(args[0].toUpperCase()).lang()),
+                            ic.getSenderType(), ic));
                 }
         }
     }
-
 }

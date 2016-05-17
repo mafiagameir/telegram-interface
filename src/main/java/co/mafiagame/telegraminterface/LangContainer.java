@@ -19,6 +19,8 @@
 package co.mafiagame.telegraminterface;
 
 import co.mafiagame.common.utils.MessageHolder;
+import co.mafiagame.persistence.api.PersistenceApi;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -32,12 +34,20 @@ import java.util.Objects;
 public class LangContainer {
 
     private Map<Long, MessageHolder.Lang> roomLangMap = new HashMap<>();
+    @Autowired
+    private PersistenceApi persistenceApi;
 
-    public MessageHolder.Lang getLang(Long roomId) {
-        if (Objects.isNull(roomId))
+    public MessageHolder.Lang getLang(Long roomId, String userId) {
+        if (Objects.isNull(roomId)) {
             return MessageHolder.Lang.EN;
+        }
         MessageHolder.Lang lang = roomLangMap.get(roomId);
-        return Objects.isNull(lang) ? MessageHolder.Lang.EN : lang;
+        if (Objects.isNull(lang)) {
+            lang = persistenceApi.getLang(userId);
+            put(roomId, lang);
+            return lang;
+        }
+        return lang;
     }
 
     public void put(Long roomId, MessageHolder.Lang lang) {

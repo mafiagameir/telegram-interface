@@ -142,7 +142,7 @@ public class TelegramChannel implements InterfaceChannel {
             sendMessage.setReplyMarkup(replyKeyboardMarkup);
         }
         String msgStr = mentions + "\n" + MessageHolder.get(msg.getMessageCode(),
-                langContainer.getLang(ic.getIntRoomId()), msg.getArgs());
+                langContainer.getLang(ic.getIntRoomId(),ic.getUserId()), msg.getArgs());
         sendMessage.setText(msgStr);
         try {
             outQueue.put(sendMessage);
