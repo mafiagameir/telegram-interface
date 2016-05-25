@@ -39,7 +39,7 @@ public class LangContainer {
 
     public MessageHolder.Lang getLang(Long roomId, String userId) {
         if (Objects.isNull(roomId)) {
-            return MessageHolder.Lang.EN;
+            return MessageHolder.Lang.FA;
         }
         MessageHolder.Lang lang = roomLangMap.get(roomId);
         if (Objects.isNull(lang)) {

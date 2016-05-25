@@ -31,7 +31,7 @@ public class TelegramInterfaceContext implements InterfaceContext {
     private ChannelType senderType;
     private Long userId;
     private String userName;
-    private MessageHolder.Lang lang = MessageHolder.Lang.EN;
+    private MessageHolder.Lang lang = MessageHolder.Lang.FA;
 
     public TelegramInterfaceContext() {
     }

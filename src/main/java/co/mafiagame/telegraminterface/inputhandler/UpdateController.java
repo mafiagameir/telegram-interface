@@ -37,6 +37,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -68,8 +69,10 @@ public class UpdateController {
                                 TResult.class);
                         for (TUpdate update : tResult.getResult()) {
                             if (offset < update.getId()) {
-                                logger.info("receive: {}", update);
-                                commandHandler.handle(update);
+                                if (Objects.nonNull(update.getMessage())) {
+                                    logger.info("receive: {}", update);
+                                    commandHandler.handle(update);
+                                }
                                 offset = update.getId();
                                 logger.info("offset set to {}", offset);
                             }
