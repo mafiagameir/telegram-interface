@@ -36,6 +36,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -175,12 +176,19 @@ public class CommandHandler {
                             new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
                             ic.getSenderType(), ic));
                 } else {
-                    langContainer.put(roomId, MessageHolder.Lang.valueOf(args[0].toUpperCase()));
-                    ic.setLang(MessageHolder.Lang.valueOf(args[0].toUpperCase()));
-                    persistenceApi.setLang(ic.getUserId(), MessageHolder.Lang.valueOf(args[0].toUpperCase()));
-                    interfaceChannel.send(new ResultMessage(
-                            new Message("language.changed", ic.getUserId(), ic.getUserName(), MessageHolder.Lang.valueOf(args[0].toUpperCase()).lang()),
-                            ic.getSenderType(), ic));
+                    MessageHolder.Lang lang = MessageHolder.Lang.valueOf(args[0].toUpperCase());
+                    if(Objects.isNull(lang))
+                        interfaceChannel.send(new ResultMessage(
+                                new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
+                                ic.getSenderType(), ic));
+                    else {
+                        langContainer.put(roomId,lang );
+                        ic.setLang(lang);
+                        persistenceApi.setLang(ic.getUserId(), lang);
+                        interfaceChannel.send(new ResultMessage(
+                                new Message("language.changed", ic.getUserId(), ic.getUserName(), lang.lang()),
+                                ic.getSenderType(), ic));
+                    }
                 }
         }
     }
