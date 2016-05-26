@@ -69,11 +69,11 @@ public class UpdateController {
                                 TResult.class);
                         for (TUpdate update : tResult.getResult()) {
                             if (offset < update.getId()) {
+                                offset = update.getId();
                                 if (Objects.nonNull(update.getMessage())) {
                                     logger.info("receive: {}", update);
                                     commandHandler.handle(update);
                                 }
-                                offset = update.getId();
                                 logger.info("offset set to {}", offset);
                             }
                         }
