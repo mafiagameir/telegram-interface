@@ -22,26 +22,27 @@ import co.mafiagame.common.channel.InterfaceContext;
 import co.mafiagame.common.domain.InterfaceType;
 import co.mafiagame.common.domain.result.ChannelType;
 import co.mafiagame.common.utils.MessageHolder;
+import co.mafiagame.telegram.api.domain.TChat;
 
 /**
  * @author hekmatof
  */
 public class TelegramInterfaceContext implements InterfaceContext {
+    private TChat from;
+    private TChat chat;
     private Long roomId;
-    private ChannelType senderType;
-    private Long userId;
-    private String userName;
     private MessageHolder.Lang lang = MessageHolder.Lang.FA;
 
     public TelegramInterfaceContext() {
     }
 
-    public TelegramInterfaceContext(Long roomId, Long userId, String userName, ChannelType senderType, MessageHolder.Lang lang) {
+    public TelegramInterfaceContext(Long roomId, TChat from, TChat chat, MessageHolder.Lang lang) {
         this.roomId = roomId;
-        this.senderType = senderType;
-        this.userId = userId;
-        this.userName = userName;
         this.lang = lang;
+        this.from = from;
+        this.chat = chat;
+        if (roomId == null)
+            this.roomId = chat.getId();
     }
 
     public void setRoomId(Long roomId) {
@@ -49,16 +50,16 @@ public class TelegramInterfaceContext implements InterfaceContext {
     }
 
     public String getUserId() {
-        return String.valueOf(userId);
+        return String.valueOf(from.getId());
     }
 
     @Override
     public String getUserName() {
-        return userName;
+        return from.getUsername();
     }
 
     public Long getUserIdInt() {
-        return userId;
+        return from.getId();
     }
 
     public String getRoomId() {
@@ -76,7 +77,7 @@ public class TelegramInterfaceContext implements InterfaceContext {
 
     @Override
     public ChannelType getSenderType() {
-        return senderType;
+        return chat.getChannelType();
     }
 
     public MessageHolder.Lang getLang() {
@@ -106,10 +107,10 @@ public class TelegramInterfaceContext implements InterfaceContext {
     @Override
     public String toString() {
         return "TelegramInterfaceContext{" +
-                "roomId=" + roomId +
-                ", senderType=" + senderType +
-                ", userId=" + userId +
-                ", userName='" + userName + '\'' +
+                "from=" + from +
+                ", chat=" + chat +
+                ", roomId=" + roomId +
+                ", lang=" + lang +
                 '}';
     }
 }
