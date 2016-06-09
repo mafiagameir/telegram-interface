@@ -66,8 +66,7 @@ public class CommandHandler {
         TelegramInterfaceContext telegramIc = (TelegramInterfaceContext) ic;
         if (telegramIc.getIntRoomId() == null)
             telegramIc.setRoomId(update.getMessage().getChat().getId());
-        if (!validateUsername(update, telegramIc))
-            return;
+
         String msg = update.getMessage().getText();
         if (msg == null)
             return;
@@ -104,13 +103,13 @@ public class CommandHandler {
         ).filter(pureMessage::startsWith).findFirst().get();
     }
 
-    private boolean validateUsername(TUpdate update, TelegramInterfaceContext ic) {
-        String username = update.getMessage().getFrom().getUsername();
+    private boolean validateUsername(TelegramInterfaceContext ic) {
+        String username = ic.getUserName();
         if (username == null || username.equals("null")) {
-            ic.setRoomId(update.getMessage().getChat().getId());
+            ic.setRoomId(ic.getUserIdInt());
             interfaceChannel.send(
                     new ResultMessage(
-                            new Message("username.must.be.defined", String.valueOf(update.getMessage().getFrom().getId()), ""),
+                            new Message("username.must.be.defined", ic.getUserId(), ""),
                             ic.getSenderType(), ic));
             return false;
         }
@@ -120,6 +119,8 @@ public class CommandHandler {
     private void handle(TelegramInterfaceContext ic, Long roomId, TChat user, String command, String[] args) {
         switch (command) {
             case Constants.CMD.START_STASHED_GAME:
+                if (!validateUsername(ic))
+                    return;
                 ic.setRoomId(roomId);
                 roomContainer.put(user.getUsername(), roomId);
                 if (args.length < 4) {
@@ -132,6 +133,8 @@ public class CommandHandler {
                 }
                 break;
             case Constants.CMD.REGISTER:
+                if (!validateUsername(ic))
+                    return;
                 ic.setRoomId(roomId);
                 roomContainer.put(user.getUsername(), roomId);
                 gameApi.register(ic, user.getUsername(), user.getFirstName(), user.getLastName());
@@ -166,30 +169,37 @@ public class CommandHandler {
                 break;
             case Constants.CMD.HELP:
                 gameApi.help(ic);
+                if (!validateUsername(ic))
+                    return;
                 break;
             case Constants.CMD.CANCEL:
                 gameApi.cancelGame(ic, user.getUsername());
                 break;
             case Constants.CMD.LANG:
-                if (args.length < 1) {
-                    interfaceChannel.send(new ResultMessage(
-                            new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
-                            ic.getSenderType(), ic));
-                } else {
-                    MessageHolder.Lang lang = MessageHolder.Lang.valueOf(args[0].toUpperCase());
-                    if(Objects.isNull(lang))
-                        interfaceChannel.send(new ResultMessage(
-                                new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
-                                ic.getSenderType(), ic));
-                    else {
-                        langContainer.put(roomId,lang );
-                        ic.setLang(lang);
-                        persistenceApi.setLang(ic.getUserId(), lang);
-                        interfaceChannel.send(new ResultMessage(
-                                new Message("language.changed", ic.getUserId(), ic.getUserName(), lang.lang()),
-                                ic.getSenderType(), ic));
-                    }
-                }
+                setLang(args, ic, roomId);
+                validateUsername(ic);
+        }
+    }
+
+    private void setLang(String[] args, TelegramInterfaceContext ic, Long roomId) {
+        if (args.length < 1) {
+            interfaceChannel.send(new ResultMessage(
+                    new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
+                    ic.getSenderType(), ic));
+        } else {
+            MessageHolder.Lang lang = MessageHolder.Lang.valueOf(args[0].toUpperCase());
+            if (Objects.isNull(lang))
+                interfaceChannel.send(new ResultMessage(
+                        new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
+                        ic.getSenderType(), ic));
+            else {
+                langContainer.put(roomId, lang);
+                ic.setLang(lang);
+                persistenceApi.setLang(ic.getUserId(), lang);
+                interfaceChannel.send(new ResultMessage(
+                        new Message("language.changed", ic.getUserId(), ic.getUserName(), lang.lang()),
+                        ic.getSenderType(), ic));
+            }
         }
     }
 }
