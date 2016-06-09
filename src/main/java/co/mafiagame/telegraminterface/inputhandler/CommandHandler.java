@@ -119,15 +119,17 @@ public class CommandHandler {
     private void handle(TelegramInterfaceContext ic, Long roomId, TChat user, String command, String[] args) {
         switch (command) {
             case Constants.CMD.START_STASHED_GAME:
-                if (!validateUsername(ic))
-                    return;
                 ic.setRoomId(roomId);
                 roomContainer.put(user.getUsername(), roomId);
                 if (args.length < 4) {
                     interfaceChannel.send(
                             new ResultMessage(new Message("welcome.message", ic.getUserId(), ic.getUserName()),
                                     ic.getSenderType(), ic));
+                    if (!validateUsername(ic))
+                        return;
                 } else {
+                    if (!validateUsername(ic))
+                        return;
                     gameApi.startStashedGame(ic, Integer.valueOf(args[0]), Integer.valueOf(args[1]),
                             Integer.valueOf(args[2]), Integer.valueOf(args[3]));
                 }
