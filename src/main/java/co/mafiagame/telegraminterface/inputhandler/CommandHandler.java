@@ -92,13 +92,13 @@ public class CommandHandler {
                 Constants.CMD.REGISTER,
                 Constants.CMD.CANCEL,
                 Constants.CMD.DETECTOR_ASK,
+                Constants.CMD.KILL_ME,
                 Constants.CMD.DOCTOR_HEAL,
                 Constants.CMD.MAFIA_VOTE,
                 Constants.CMD.START_STASHED_GAME,
                 Constants.CMD.WHO_IS_PLAYING,
                 Constants.CMD.HELP,
                 Constants.CMD.WHAT_IS_MY_ROLE,
-                Constants.CMD.KILL_ME,
                 Constants.CMD.LANG
         ).filter(pureMessage::startsWith).findFirst().get();
     }
