@@ -131,7 +131,6 @@ public class CommandHandler {
             case Constants.CMD.REGISTER:
                 if (!validateUsername(ic))
                     return;
-                ic.setRoomId(user.getUsername());
                 roomContainer.put(user.getUsername(), ic.getIntRoomId());
                 gameApi.register(ic, user.getUsername(), user.getFirstName(), user.getLastName());
                 break;
@@ -172,12 +171,12 @@ public class CommandHandler {
                 gameApi.cancelGame(ic, user.getUsername());
                 break;
             case Constants.CMD.LANG:
-                setLang(args, ic, roomId);
+                setLang(args, ic);
                 validateUsername(ic);
         }
     }
 
-    private void setLang(String[] args, TelegramInterfaceContext ic, Long roomId) {
+    private void setLang(String[] args, TelegramInterfaceContext ic) {
         if (args.length < 1) {
             interfaceChannel.send(new ResultMessage(
                     new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
