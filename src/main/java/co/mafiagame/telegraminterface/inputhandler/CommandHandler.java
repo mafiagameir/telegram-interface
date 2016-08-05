@@ -20,6 +20,7 @@ package co.mafiagame.telegraminterface.inputhandler;
 
 import co.mafiagame.common.Constants;
 import co.mafiagame.common.channel.InterfaceChannel;
+import co.mafiagame.common.channel.InterfaceContext;
 import co.mafiagame.common.domain.result.Message;
 import co.mafiagame.common.domain.result.ResultMessage;
 import co.mafiagame.common.utils.MessageHolder;
@@ -61,9 +62,6 @@ public class CommandHandler {
                 update.getMessage().getFrom(),
                 update.getMessage().getChat(),
                 langContainer.getLang(roomId, String.valueOf(update.getMessage().getFrom().getId())));
-
-        if (!validateUsername(update, ic))
-            return;
         String msg = update.getMessage().getText();
         if (msg == null)
             return;
@@ -89,23 +87,24 @@ public class CommandHandler {
                 Constants.CMD.REGISTER,
                 Constants.CMD.CANCEL,
                 Constants.CMD.DETECTOR_ASK,
+                Constants.CMD.KILL_ME,
                 Constants.CMD.DOCTOR_HEAL,
                 Constants.CMD.MAFIA_VOTE,
                 Constants.CMD.START_STASHED_GAME,
                 Constants.CMD.WHO_IS_PLAYING,
                 Constants.CMD.HELP,
                 Constants.CMD.WHAT_IS_MY_ROLE,
-                Constants.CMD.KILL_ME,
                 Constants.CMD.LANG
         ).filter(pureMessage::startsWith).findFirst().get();
     }
 
-    private boolean validateUsername(TUpdate update, TelegramInterfaceContext ic) {
-        String username = update.getMessage().getFrom().getUsername();
+    private boolean validateUsername(TelegramInterfaceContext ic) {
+        String username = ic.getUserName();
         if (username == null || username.equals("null")) {
+            ic.setRoomId(ic.getUserIdInt());
             interfaceChannel.send(
                     new ResultMessage(
-                            new Message("username.must.be.defined", String.valueOf(update.getMessage().getFrom().getId()), ""),
+                            new Message("username.must.be.defined", ic.getUserId(), ""),
                             ic.getSenderType(), ic));
             return false;
         }
@@ -120,12 +119,19 @@ public class CommandHandler {
                     interfaceChannel.send(
                             new ResultMessage(new Message("welcome.message", ic.getUserId(), ic.getUserName()),
                                     ic.getSenderType(), ic));
+                    if (!validateUsername(ic))
+                        return;
                 } else {
+                    if (!validateUsername(ic))
+                        return;
                     gameApi.startStashedGame(ic, Integer.valueOf(args[0]), Integer.valueOf(args[1]),
                             Integer.valueOf(args[2]), Integer.valueOf(args[3]));
                 }
                 break;
             case Constants.CMD.REGISTER:
+                if (!validateUsername(ic))
+                    return;
+                ic.setRoomId(user.getUsername());
                 roomContainer.put(user.getUsername(), ic.getIntRoomId());
                 gameApi.register(ic, user.getUsername(), user.getFirstName(), user.getLastName());
                 break;
@@ -159,30 +165,37 @@ public class CommandHandler {
                 break;
             case Constants.CMD.HELP:
                 gameApi.help(ic);
+                if (!validateUsername(ic))
+                    return;
                 break;
             case Constants.CMD.CANCEL:
                 gameApi.cancelGame(ic, user.getUsername());
                 break;
             case Constants.CMD.LANG:
-                if (args.length < 1) {
-                    interfaceChannel.send(new ResultMessage(
-                            new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
-                            ic.getSenderType(), ic));
-                } else {
-                    MessageHolder.Lang lang = MessageHolder.Lang.valueOf(args[0].toUpperCase());
-                    if (Objects.isNull(lang))
-                        interfaceChannel.send(new ResultMessage(
-                                new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
-                                ic.getSenderType(), ic));
-                    else {
-                        langContainer.put(ic.getIntRoomId(), lang);
-                        ic.setLang(lang);
-                        persistenceApi.setLang(ic.getUserId(), lang);
-                        interfaceChannel.send(new ResultMessage(
-                                new Message("language.changed", ic.getUserId(), ic.getUserName(), lang.lang()),
-                                ic.getSenderType(), ic));
-                    }
-                }
+                setLang(args, ic, roomId);
+                validateUsername(ic);
+        }
+    }
+
+    private void setLang(String[] args, TelegramInterfaceContext ic, Long roomId) {
+        if (args.length < 1) {
+            interfaceChannel.send(new ResultMessage(
+                    new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
+                    ic.getSenderType(), ic));
+        } else {
+            MessageHolder.Lang lang = MessageHolder.Lang.valueOf(args[0].toUpperCase());
+            if (Objects.isNull(lang))
+                interfaceChannel.send(new ResultMessage(
+                        new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
+                        ic.getSenderType(), ic));
+            else {
+                langContainer.put(ic.getIntRoomId(), lang);
+                ic.setLang(lang);
+                persistenceApi.setLang(ic.getUserId(), lang);
+                interfaceChannel.send(new ResultMessage(
+                        new Message("language.changed", ic.getUserId(), ic.getUserName(), lang.lang()),
+                        ic.getSenderType(), ic));
+            }
         }
     }
 }
