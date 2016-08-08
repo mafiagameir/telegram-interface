@@ -32,7 +32,7 @@ public class TReplyKeyboardMarkup {
     private List<List<String>> keyboard = new ArrayList<>();
     @JsonProperty("resize_keyboard")
     private boolean resizeKeyboard = false;
-    @JsonProperty("one_time_keyboar")
+    @JsonProperty("one_time_keyboard")
     private boolean oneTimeKeyboard = true;
     private boolean selective = true;
 

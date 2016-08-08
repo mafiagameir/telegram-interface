@@ -53,6 +53,7 @@ public class UpdateController {
     @Value("${mafia.telegram.api.url}")
     private String telegramUrl;
 
+    @SuppressWarnings("InfiniteLoopStatement")
     @PostConstruct
     public void init() {
         Thread thread = new Thread(() -> {
@@ -63,7 +64,6 @@ public class UpdateController {
                     try {
                         RestTemplate restTemplate = new RestTemplate();
                         setErrorHandler(restTemplate);
-                        //logger.debug("get request with offset {}", offset + 1);
                         TResult tResult = restTemplate.getForObject(
                                 telegramUrl + telegramToken + "/getUpdates?offset=" + String.valueOf(offset + 1),
                                 TResult.class);

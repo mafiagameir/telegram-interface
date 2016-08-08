@@ -124,7 +124,7 @@ public class TelegramChannel implements InterfaceChannel {
         }
     }
 
-    public void sendMessage(Message msg, ChannelType channelType, TelegramInterfaceContext ic) {
+    private void sendMessage(Message msg, ChannelType channelType, TelegramInterfaceContext ic) {
         SendMessage sendMessage = new SendMessage();
         if (channelType == ChannelType.GENERAL)
             sendMessage.setChatId(ic.getIntRoomId());
