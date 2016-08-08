@@ -19,8 +19,6 @@
 package co.mafiagame.commands;
 
 import co.mafiagame.common.Constants;
-import co.mafiagame.common.domain.result.Message;
-import co.mafiagame.common.domain.result.ResultMessage;
 import co.mafiagame.telegram.api.domain.TChat;
 import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
@@ -31,28 +29,18 @@ import org.springframework.stereotype.Component;
  * @author Esa Hekmatizadeh
  */
 @Component
-public class StartCommandHandler extends TelegramCommandHandler {
+public class KillMeCommandHandler extends TelegramCommandHandler {
     @Autowired
     private RoomContainer roomContainer;
 
     @Override
     protected String getCommandString() {
-        return Constants.CMD.START_STASHED_GAME;
+        return Constants.CMD.KILL_ME;
     }
 
     @Override
     public void execute(TelegramInterfaceContext ic, TChat user, String[] args) {
-        roomContainer.put(user.getUsername(), ic.getIntRoomId());
-        if (args.length < 4) {
-            interfaceChannel.send(
-                    new ResultMessage(new Message("welcome.message", ic.getUserId(), ic.getUserName()),
-                            ic.getSenderType(), ic));
-            validateUsername(ic);
-        } else {
-            if (!validateUsername(ic))
-                return;
-            gameApi.startStashedGame(ic, Integer.valueOf(args[0]), Integer.valueOf(args[1]),
-                    Integer.valueOf(args[2]), Integer.valueOf(args[3]));
-        }
+        gameApi.whatIsMyRole(ic);
+        roomContainer.remove(user.getUsername());
     }
 }

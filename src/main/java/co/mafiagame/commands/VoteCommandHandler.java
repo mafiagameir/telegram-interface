@@ -19,40 +19,24 @@
 package co.mafiagame.commands;
 
 import co.mafiagame.common.Constants;
-import co.mafiagame.common.domain.result.Message;
-import co.mafiagame.common.domain.result.ResultMessage;
 import co.mafiagame.telegram.api.domain.TChat;
-import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
 
 /**
  * @author Esa Hekmatizadeh
  */
 @Component
-public class StartCommandHandler extends TelegramCommandHandler {
-    @Autowired
-    private RoomContainer roomContainer;
-
+public class VoteCommandHandler extends TelegramCommandHandler {
     @Override
     protected String getCommandString() {
-        return Constants.CMD.START_STASHED_GAME;
+        return Constants.CMD.VOTE;
     }
 
     @Override
     public void execute(TelegramInterfaceContext ic, TChat user, String[] args) {
-        roomContainer.put(user.getUsername(), ic.getIntRoomId());
-        if (args.length < 4) {
-            interfaceChannel.send(
-                    new ResultMessage(new Message("welcome.message", ic.getUserId(), ic.getUserName()),
-                            ic.getSenderType(), ic));
-            validateUsername(ic);
-        } else {
-            if (!validateUsername(ic))
-                return;
-            gameApi.startStashedGame(ic, Integer.valueOf(args[0]), Integer.valueOf(args[1]),
-                    Integer.valueOf(args[2]), Integer.valueOf(args[3]));
-        }
+        gameApi.vote(ic, user.getUsername(), Arrays.asList(args));
     }
 }

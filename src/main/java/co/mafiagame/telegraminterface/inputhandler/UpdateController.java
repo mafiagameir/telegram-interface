@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 public class UpdateController {
     private static final Logger logger = LoggerFactory.getLogger(UpdateController.class);
     @Autowired
-    private CommandHandler commandHandler;
+    private CommandDispatcher commandDispatcher;
     @Value("${mafia.telegram.token}")
     private String telegramToken;
     @Value("${mafia.telegram.api.url}")
@@ -72,7 +72,7 @@ public class UpdateController {
                                 offset = update.getId();
                                 if (Objects.nonNull(update.getMessage())) {
                                     logger.info("receive: {}", update);
-                                    commandHandler.handle(update);
+                                    commandDispatcher.handle(update);
                                 }
                                 logger.info("offset set to {}", offset);
                             }
@@ -113,7 +113,7 @@ public class UpdateController {
             logger.warn("Suspicious connection with token {} and update {}", token, update);
             return;
         }
-        commandHandler.handle(update);
+        commandDispatcher.handle(update);
     }
 
     private boolean validate(String token) {
