@@ -91,7 +91,7 @@ public class CommandHandler {
                 Constants.CMD.VOTE,
                 Constants.CMD.REGISTER,
                 Constants.CMD.CANCEL,
-                Constants.CMD.DETECTOR_ASK,
+                Constants.CMD.DETECTIVE_ASK,
                 Constants.CMD.KILL_ME,
                 Constants.CMD.DOCTOR_HEAL,
                 Constants.CMD.MAFIA_VOTE,
@@ -163,8 +163,8 @@ public class CommandHandler {
             case Constants.CMD.MAFIA_VOTE:
                 gameApi.mafiaKillVote(ic, user.getUsername(), args[0]);
                 break;
-            case Constants.CMD.DETECTOR_ASK:
-                gameApi.detectorAsk(ic, user.getUsername(), args[0]);
+            case Constants.CMD.DETECTIVE_ASK:
+                gameApi.detectiveAsk(ic, user.getUsername(), args[0]);
                 break;
             case Constants.CMD.DOCTOR_HEAL:
                 gameApi.doctorHeal(ic, user.getUsername(), args[0]);
