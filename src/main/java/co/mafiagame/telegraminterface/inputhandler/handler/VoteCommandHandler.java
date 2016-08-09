@@ -16,24 +16,26 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package co.mafiagame.commands;
+package co.mafiagame.telegraminterface.inputhandler.handler;
 
 import co.mafiagame.common.Constants;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+
 /**
  * @author Esa Hekmatizadeh
  */
 @Component
-public class DoctorHealCommandHandler extends TelegramCommandHandler {
+public class VoteCommandHandler extends TelegramCommandHandler {
     @Override
     protected String getCommandString() {
-        return Constants.CMD.DOCTOR_HEAL;
+        return Constants.CMD.VOTE;
     }
 
     @Override
     public void execute(TelegramInterfaceContext ic, String[] args) {
-        gameApi.doctorHeal(ic, ic.getUserName(), args[0]);
+        gameApi.vote(ic, ic.getUserName(), Arrays.asList(args));
     }
 }

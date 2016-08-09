@@ -16,7 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package co.mafiagame.commands;
+package co.mafiagame.telegraminterface.inputhandler.handler;
 
 import co.mafiagame.common.Constants;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
@@ -26,14 +26,14 @@ import org.springframework.stereotype.Component;
  * @author Esa Hekmatizadeh
  */
 @Component
-public class StartElectionCommandHandler extends TelegramCommandHandler {
+public class WhoIsPlayingCommandHandler extends TelegramCommandHandler {
     @Override
     protected String getCommandString() {
-        return Constants.CMD.START_ELECTION;
+        return Constants.CMD.WHO_IS_PLAYING;
     }
 
     @Override
     public void execute(TelegramInterfaceContext ic, String[] args) {
-        gameApi.startElection(ic);
+        gameApi.whoIsPlaying(ic);
     }
 }

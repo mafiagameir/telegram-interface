@@ -16,32 +16,25 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package co.mafiagame.commands;
+package co.mafiagame.telegraminterface.inputhandler.handler;
 
 import co.mafiagame.common.Constants;
-import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
  * @author Esa Hekmatizadeh
  */
 @Component
-public class RegisterCommandHandler extends TelegramCommandHandler {
-    @Autowired
-    private RoomContainer roomContainer;
-
+public class HelpCommandHandler extends TelegramCommandHandler {
     @Override
     protected String getCommandString() {
-        return Constants.CMD.REGISTER;
+        return Constants.CMD.HELP;
     }
 
     @Override
     public void execute(TelegramInterfaceContext ic, String[] args) {
-        if (!validateUsername(ic))
-            return;
-        roomContainer.put(ic.getUserName(), ic.getIntRoomId());
-        gameApi.register(ic, ic.getFirstName(), ic.getLastName());
+        gameApi.help(ic);
+        validateUsername(ic);
     }
 }

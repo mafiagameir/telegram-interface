@@ -16,48 +16,43 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package co.mafiagame.commands;
+package co.mafiagame.telegraminterface.inputhandler.handler;
 
-import co.mafiagame.common.channel.InterfaceChannel;
+import co.mafiagame.common.Constants;
 import co.mafiagame.common.domain.result.Message;
 import co.mafiagame.common.domain.result.ResultMessage;
-import co.mafiagame.engine.api.GameApi;
+import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
-import co.mafiagame.telegraminterface.inputhandler.CommandDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.PostConstruct;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Esa Hekmatizadeh
  */
-public abstract class TelegramCommandHandler {
+@Component
+public class StartCommandHandler extends TelegramCommandHandler {
     @Autowired
-    protected CommandDispatcher commandDispatcher;
-    @Autowired
-    protected InterfaceChannel interfaceChannel;
-    @Autowired
-    protected GameApi gameApi;
+    private RoomContainer roomContainer;
 
-    @PostConstruct
-    protected final void init() {
-        commandDispatcher.registerCommandHandler(getCommandString(), this);
+    @Override
+    protected String getCommandString() {
+        return Constants.CMD.START_STASHED_GAME;
     }
 
-    protected abstract String getCommandString();
-
-    public abstract void execute(TelegramInterfaceContext ic, String[] args);
-
-    boolean validateUsername(TelegramInterfaceContext ic) {
-        String username = ic.getUserName();
-        if (username == null || username.equals("null")) {
-            ic.setRoomId(ic.getUserIdInt());
+    @Override
+    public void execute(TelegramInterfaceContext ic, String[] args) {
+        roomContainer.put(ic.getUserName(), ic.getIntRoomId());
+        if (args.length < 4) {
             interfaceChannel.send(
-                    new ResultMessage(
-                            new Message("username.must.be.defined").setReceiverId(ic.getUserId()),
+                    new ResultMessage(new Message("welcome.message")
+                            .setReceiverId(ic.getUserId()),
                             ic.getSenderType(), ic));
-            return false;
+            validateUsername(ic);
+        } else {
+            if (!validateUsername(ic))
+                return;
+            gameApi.startStashedGame(ic, Integer.valueOf(args[0]), Integer.valueOf(args[1]),
+                    Integer.valueOf(args[2]), Integer.valueOf(args[3]));
         }
-        return true;
     }
 }

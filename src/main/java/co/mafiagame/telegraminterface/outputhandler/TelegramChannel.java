@@ -22,17 +22,14 @@ import co.mafiagame.common.channel.InterfaceChannel;
 import co.mafiagame.common.domain.result.ChannelType;
 import co.mafiagame.common.domain.result.Message;
 import co.mafiagame.common.domain.result.ResultMessage;
-import co.mafiagame.common.utils.MessageHolder;
-import co.mafiagame.exception.BotHasNotAccessException;
 import co.mafiagame.exception.CouldNotSendMessageException;
 import co.mafiagame.telegram.api.domain.TMessage;
-import co.mafiagame.telegram.api.domain.TReplyKeyboardMarkup;
-import co.mafiagame.telegraminterface.LangContainer;
 import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
+import co.mafiagame.telegraminterface.outputhandler.handler.DefaultOutputMessageHandler;
+import co.mafiagame.telegraminterface.outputhandler.handler.OutputMessageHandler;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -46,13 +43,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @author hekmatof
@@ -70,8 +65,14 @@ public class TelegramChannel implements InterfaceChannel {
     private final BlockingQueue<SendMessage> outQueue = new LinkedBlockingQueue<>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static HttpClient client;
+    private final Map<String, OutputMessageHandler> handlers = new TreeMap<>();
     @Autowired
-    private LangContainer langContainer;
+    private DefaultOutputMessageHandler defaultOutputMessageHandler;
+
+
+    public void registerOutputHandler(String msgKey, OutputMessageHandler handler) {
+        handlers.put(msgKey, handler);
+    }
 
     @PostConstruct
     private void init() {
@@ -84,24 +85,7 @@ public class TelegramChannel implements InterfaceChannel {
                 try {
                     if (!outQueue.isEmpty()) {
                         sendMessage = outQueue.take();
-                        logger.info("deliver {}", sendMessage);
-                        HttpPost post = new HttpPost(url);
-                        post.setHeader("Content-Type", "application/json; charset=UTF-8");
-                        StringEntity entity = new StringEntity(
-                                objectMapper.writeValueAsString(sendMessage),
-                                ContentType.create("application/json", "UTF-8"));
-                        post.setEntity(entity);
-                        HttpResponse response = client.execute(post);
-                        if (response.getStatusLine().getStatusCode() != 200) {
-                            if (IOUtils.toString(response.getEntity().getContent())
-                                    .contains("PEER_ID_INVALID"))
-                                throw new BotHasNotAccessException();
-                            logger.error("could not deliver message: {}",
-                                    response.getStatusLine());
-                            post.releaseConnection();
-                            throw new CouldNotSendMessageException();
-                        }
-                        post.releaseConnection();
+                        deliverMessage(sendMessage);
                     }
                 } catch (InterruptedException e) {
                     logger.error("error in reading outQueue", e);
@@ -114,41 +98,43 @@ public class TelegramChannel implements InterfaceChannel {
         timer.schedule(timerTask, TimeUnit.MINUTES.toMillis(1), TimeUnit.MILLISECONDS.toMillis(200));
     }
 
+    private void deliverMessage(SendMessage sendMessage) throws IOException {
+        logger.info("deliver {}", sendMessage);
+        HttpPost post = new HttpPost(url);
+        post.setHeader("Content-Type", "application/json; charset=UTF-8");
+        StringEntity entity = new StringEntity(
+                objectMapper.writeValueAsString(sendMessage),
+                ContentType.create("application/json", "UTF-8"));
+        post.setEntity(entity);
+        HttpResponse response = client.execute(post);
+        SendMessageResult result = objectMapper.readValue(response.getEntity().getContent(),
+                SendMessageResult.class);
+        post.releaseConnection();
+        if (!result.isOk()) {
+            logger.error("could not deliver message: {} - {}",
+                    result.getErrorCode(), result.getDescription());
+            throw new CouldNotSendMessageException();
+        }
+    }
+
     @Override
     public void send(ResultMessage resultMessage) {
         if (resultMessage.getChannelType() == ChannelType.NONE)
             return;
         TelegramInterfaceContext ic = (TelegramInterfaceContext) resultMessage.getIc();
         for (Message msg : resultMessage.getMessages()) {
-            sendMessage(msg, resultMessage.getChannelType(), ic);
+            OutputMessageHandler outputMessageHandler = handlers.get(msg.getMessageCode());
+            if (Objects.isNull(outputMessageHandler))
+                outputMessageHandler = defaultOutputMessageHandler;
+            outputMessageHandler.execute(msg, resultMessage.getChannelType(), ic);
+
         }
+
+//        sendMessage(msg, resultMessage.getChannelType(), ic);
     }
 
     private void sendMessage(Message msg, ChannelType channelType, TelegramInterfaceContext ic) {
-        SendMessage sendMessage = new SendMessage();
-        if (channelType == ChannelType.GENERAL)
-            sendMessage.setChatId(ic.getIntRoomId());
-        if (channelType == ChannelType.USER_PRIVATE)
-            sendMessage.setChatId(Long.valueOf(msg.getReceiverId()));
-        String mentions = "";
-        if (msg.getOptions().size() > 0) {
-            TReplyKeyboardMarkup replyKeyboardMarkup = new TReplyKeyboardMarkup();
-            if (msg.getToUsers() == null)
-                replyKeyboardMarkup.setSelective(false);
-            else
-                mentions = String.join(" ", msg.getToUsers().stream()
-                        .map(u -> "@" + u).collect(Collectors.toList()));
-            replyKeyboardMarkup.addOptions(msg.getOptions());
-            sendMessage.setReplyMarkup(replyKeyboardMarkup);
-        }
-        String msgStr = mentions + "\n" + MessageHolder.get(msg.getMessageCode(),
-                langContainer.getLang(ic.getIntRoomId(),ic.getUserId()), msg.getArgs());
-        sendMessage.setText(msgStr);
-        try {
-            outQueue.put(sendMessage);
-        } catch (InterruptedException e) {
-            logger.error("could not put into outQueue: " + sendMessage, e);
-        }
+
     }
 
     @Override
@@ -156,7 +142,16 @@ public class TelegramChannel implements InterfaceChannel {
         usernames.forEach(roomContainer::remove);
     }
 
-    public static class SendMessageResult {
+    public void queue(SendMessage sendMessage) {
+        try {
+            outQueue.put(sendMessage);
+        } catch (InterruptedException e) {
+            logger.error("could not put into outQueue: " + sendMessage, e);
+        }
+    }
+
+
+    private static class SendMessageResult {
         private boolean ok;
         @JsonProperty("error_code")
         private Integer errorCode;

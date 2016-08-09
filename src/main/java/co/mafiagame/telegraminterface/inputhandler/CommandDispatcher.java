@@ -18,7 +18,7 @@
 
 package co.mafiagame.telegraminterface.inputhandler;
 
-import co.mafiagame.commands.TelegramCommandHandler;
+import co.mafiagame.telegraminterface.inputhandler.handler.TelegramCommandHandler;
 import co.mafiagame.common.Constants;
 import co.mafiagame.engine.api.GameApi;
 import co.mafiagame.telegram.api.domain.TUpdate;
@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -51,7 +51,7 @@ public class CommandDispatcher {
         commandHandlers.put(command, handler);
     }
 
-    public void handle(TUpdate update) {
+    void handle(TUpdate update) {
         Long roomId = roomContainer.getRoomId(update.getMessage().getFrom().getUsername());
         TelegramInterfaceContext ic = new TelegramInterfaceContext(
                 roomId,
@@ -73,9 +73,9 @@ public class CommandDispatcher {
         }
     }
 
-    private String getCommand(String message) throws NoSuchElementException {
+    private String getCommand(String message) {
         String pureMessage = message.substring(1).toLowerCase();
-        return Stream.of(Constants.CMD.START_FINAL_ELECTION,
+        Optional<String> commandOpt = Stream.of(Constants.CMD.START_FINAL_ELECTION,
                 Constants.CMD.START_ELECTION,
                 Constants.CMD.REGISTER,
                 Constants.CMD.VOTE,
@@ -90,6 +90,9 @@ public class CommandDispatcher {
                 Constants.CMD.HELP,
                 Constants.CMD.WHAT_IS_MY_ROLE,
                 Constants.CMD.LANG
-        ).filter(pureMessage::startsWith).findFirst().get();
+        ).filter(pureMessage::startsWith).findFirst();
+        if (commandOpt.isPresent())
+            return commandOpt.get();
+        throw new RuntimeException("command not found");
     }
 }
