@@ -19,7 +19,6 @@
 package co.mafiagame.commands;
 
 import co.mafiagame.common.Constants;
-import co.mafiagame.telegram.api.domain.TChat;
 import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +38,8 @@ public class KillMeCommandHandler extends TelegramCommandHandler {
     }
 
     @Override
-    public void execute(TelegramInterfaceContext ic, TChat user, String[] args) {
+    public void execute(TelegramInterfaceContext ic, String[] args) {
         gameApi.whatIsMyRole(ic);
-        roomContainer.remove(user.getUsername());
+        roomContainer.remove(ic.getUserName());
     }
 }

@@ -19,9 +19,7 @@
 package co.mafiagame.commands;
 
 import co.mafiagame.common.Constants;
-import co.mafiagame.telegram.api.domain.TChat;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
-import org.apache.tomcat.util.bcel.classfile.Constant;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,7 +33,7 @@ public class CancelCommandHandler extends TelegramCommandHandler {
     }
 
     @Override
-    public void execute(TelegramInterfaceContext ic, TChat user, String[] args) {
-        gameApi.cancelGame(ic, user.getUsername());
+    public void execute(TelegramInterfaceContext ic, String[] args) {
+        gameApi.cancelGame(ic, ic.getUserName());
     }
 }

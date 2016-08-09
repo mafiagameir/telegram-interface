@@ -45,6 +45,14 @@ public class TelegramInterfaceContext implements InterfaceContext {
             this.roomId = chat.getId();
     }
 
+    public String getFirstName() {
+        return from.getFirstName();
+    }
+
+    public String getLastName() {
+        return from.getLastName();
+    }
+
     public void setRoomId(Long roomId) {
         this.roomId = roomId;
     }

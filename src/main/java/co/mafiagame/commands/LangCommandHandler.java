@@ -23,7 +23,6 @@ import co.mafiagame.common.domain.result.Message;
 import co.mafiagame.common.domain.result.ResultMessage;
 import co.mafiagame.common.utils.MessageHolder;
 import co.mafiagame.persistence.api.PersistenceApi;
-import co.mafiagame.telegram.api.domain.TChat;
 import co.mafiagame.telegraminterface.LangContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +46,7 @@ public class LangCommandHandler extends TelegramCommandHandler {
     }
 
     @Override
-    public void execute(TelegramInterfaceContext ic, TChat user, String[] args) {
+    public void execute(TelegramInterfaceContext ic, String[] args) {
         setLang(args, ic);
         validateUsername(ic);
     }

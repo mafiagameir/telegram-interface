@@ -48,6 +48,7 @@ public class TReplyKeyboardMarkup {
         }
     }
 
+    @SuppressWarnings("WeakerAccess")
     public List<List<String>> getKeyboard() {
         return keyboard;
     }

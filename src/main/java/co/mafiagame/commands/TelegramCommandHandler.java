@@ -22,7 +22,6 @@ import co.mafiagame.common.channel.InterfaceChannel;
 import co.mafiagame.common.domain.result.Message;
 import co.mafiagame.common.domain.result.ResultMessage;
 import co.mafiagame.engine.api.GameApi;
-import co.mafiagame.telegram.api.domain.TChat;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import co.mafiagame.telegraminterface.inputhandler.CommandDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +46,9 @@ public abstract class TelegramCommandHandler {
 
     protected abstract String getCommandString();
 
-    public abstract void execute(TelegramInterfaceContext ic, TChat user, String[] args);
+    public abstract void execute(TelegramInterfaceContext ic, String[] args);
 
-    protected boolean validateUsername(TelegramInterfaceContext ic) {
+    boolean validateUsername(TelegramInterfaceContext ic) {
         String username = ic.getUserName();
         if (username == null || username.equals("null")) {
             ic.setRoomId(ic.getUserIdInt());

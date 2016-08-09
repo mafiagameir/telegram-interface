@@ -66,7 +66,7 @@ public class CommandDispatcher {
                 String command = getCommand(msg);
                 msg = msg.substring(command.length() + 1).trim();
                 String[] args = msg.split(" ");
-                commandHandlers.get(command).execute(ic, update.getMessage().getFrom(), args);
+                commandHandlers.get(command).execute(ic, args);
             }
         } catch (Exception e) {
             gameApi.commandNotFound(ic);

@@ -19,7 +19,6 @@
 package co.mafiagame.commands;
 
 import co.mafiagame.common.Constants;
-import co.mafiagame.telegram.api.domain.TChat;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +35,7 @@ public class VoteCommandHandler extends TelegramCommandHandler {
     }
 
     @Override
-    public void execute(TelegramInterfaceContext ic, TChat user, String[] args) {
-        gameApi.vote(ic, user.getUsername(), Arrays.asList(args));
+    public void execute(TelegramInterfaceContext ic, String[] args) {
+        gameApi.vote(ic, ic.getUserName(), Arrays.asList(args));
     }
 }

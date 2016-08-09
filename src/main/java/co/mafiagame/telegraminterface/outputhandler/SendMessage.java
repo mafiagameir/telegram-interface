@@ -1,12 +1,8 @@
 package co.mafiagame.telegraminterface.outputhandler;
 
 import co.mafiagame.telegram.api.domain.TReplyKeyboardMarkup;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Esa Hekmatizadeh
