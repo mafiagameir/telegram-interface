@@ -55,7 +55,7 @@ public abstract class TelegramCommandHandler {
             ic.setRoomId(ic.getUserIdInt());
             interfaceChannel.send(
                     new ResultMessage(
-                            new Message("username.must.be.defined", ic.getUserId(), ""),
+                            new Message("username.must.be.defined").setReceiverId(ic.getUserId()),
                             ic.getSenderType(), ic));
             return false;
         }

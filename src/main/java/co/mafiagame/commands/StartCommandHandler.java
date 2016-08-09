@@ -45,7 +45,8 @@ public class StartCommandHandler extends TelegramCommandHandler {
         roomContainer.put(user.getUsername(), ic.getIntRoomId());
         if (args.length < 4) {
             interfaceChannel.send(
-                    new ResultMessage(new Message("welcome.message", ic.getUserId(), ic.getUserName()),
+                    new ResultMessage(new Message("welcome.message")
+                            .setReceiverId(ic.getUserId()),
                             ic.getSenderType(), ic));
             validateUsername(ic);
         } else {

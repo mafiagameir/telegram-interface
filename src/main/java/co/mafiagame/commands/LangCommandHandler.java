@@ -55,20 +55,24 @@ public class LangCommandHandler extends TelegramCommandHandler {
     private void setLang(String[] args, TelegramInterfaceContext ic) {
         if (args.length < 1) {
             interfaceChannel.send(new ResultMessage(
-                    new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
+                    new Message("language.command.need.parameter")
+                            .setReceiverId(ic.getUserId()),
                     ic.getSenderType(), ic));
         } else {
             MessageHolder.Lang lang = MessageHolder.Lang.valueOf(args[0].toUpperCase());
             if (Objects.isNull(lang))
                 interfaceChannel.send(new ResultMessage(
-                        new Message("language.command.need.parameter", ic.getUserId(), ic.getUserName()),
+                        new Message("language.command.need.parameter")
+                                .setReceiverId(ic.getUserId()),
                         ic.getSenderType(), ic));
             else {
                 langContainer.put(ic.getIntRoomId(), lang);
                 ic.setLang(lang);
                 persistenceApi.setLang(ic.getUserId(), lang);
                 interfaceChannel.send(new ResultMessage(
-                        new Message("language.changed", ic.getUserId(), ic.getUserName(), lang.lang()),
+                        new Message("language.changed")
+                                .setReceiverId(ic.getUserId())
+                                .setArgs(lang.lang()),
                         ic.getSenderType(), ic));
             }
         }
