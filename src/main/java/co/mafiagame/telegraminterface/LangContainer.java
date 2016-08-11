@@ -19,7 +19,7 @@
 package co.mafiagame.telegraminterface;
 
 import co.mafiagame.common.utils.MessageHolder;
-import co.mafiagame.persistence.api.PersistenceApi;
+import co.mafiagame.persistence.api.IPersistenceApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,7 +35,7 @@ public class LangContainer {
 
     private Map<Long, MessageHolder.Lang> roomLangMap = new HashMap<>();
     @Autowired
-    private PersistenceApi persistenceApi;
+    private IPersistenceApi persistenceApi;
 
     public MessageHolder.Lang getLang(Long roomId, String userId) {
         if (Objects.isNull(roomId)) {

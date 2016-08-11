@@ -22,7 +22,7 @@ import co.mafiagame.common.Constants;
 import co.mafiagame.common.domain.result.Message;
 import co.mafiagame.common.domain.result.ResultMessage;
 import co.mafiagame.common.utils.MessageHolder;
-import co.mafiagame.persistence.api.PersistenceApi;
+import co.mafiagame.persistence.api.IPersistenceApi;
 import co.mafiagame.telegraminterface.LangContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ public class LangCommandHandler extends TelegramCommandHandler {
     @Autowired
     private LangContainer langContainer;
     @Autowired
-    private PersistenceApi persistenceApi;
+    private IPersistenceApi persistenceApi;
 
     @Override
     protected String getCommandString() {
