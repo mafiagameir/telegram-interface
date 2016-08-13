@@ -20,6 +20,8 @@ package co.mafiagame.telegram.api.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 /**
  * @author hekmatof
  */
@@ -30,6 +32,7 @@ public class TMessage {
     private Integer date;
     private TChat chat;
     private String text;
+    private List<TMessageEntity> entities;
 
     public Long getId() {
         return id;
@@ -71,14 +74,23 @@ public class TMessage {
         this.text = text;
     }
 
+    public List<TMessageEntity> getEntities() {
+        return entities;
+    }
+
+    public void setEntities(List<TMessageEntity> entities) {
+        this.entities = entities;
+    }
+
     @Override
     public String toString() {
-        return "Message{" +
+        return "TMessage{" +
                 "id=" + id +
                 ", from=" + from +
                 ", date=" + date +
                 ", chat=" + chat +
                 ", text='" + text + '\'' +
+                ", entities=" + entities +
                 '}';
     }
 }
