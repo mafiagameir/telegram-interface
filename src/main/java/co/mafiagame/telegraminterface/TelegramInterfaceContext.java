@@ -23,12 +23,13 @@ import co.mafiagame.common.domain.InterfaceType;
 import co.mafiagame.common.domain.result.ChannelType;
 import co.mafiagame.common.utils.MessageHolder;
 import co.mafiagame.telegram.api.domain.TChat;
+import co.mafiagame.telegram.api.domain.TUser;
 
 /**
  * @author hekmatof
  */
 public class TelegramInterfaceContext implements InterfaceContext {
-    private TChat from;
+    private TUser from;
     private TChat chat;
     private Long roomId;
     private MessageHolder.Lang lang = MessageHolder.Lang.FA;
@@ -36,7 +37,7 @@ public class TelegramInterfaceContext implements InterfaceContext {
     public TelegramInterfaceContext() {
     }
 
-    public TelegramInterfaceContext(Long roomId, TChat from, TChat chat, MessageHolder.Lang lang) {
+    public TelegramInterfaceContext(Long roomId, TUser from, TChat chat, MessageHolder.Lang lang) {
         this.roomId = roomId;
         this.lang = lang;
         this.from = from;
@@ -67,7 +68,7 @@ public class TelegramInterfaceContext implements InterfaceContext {
     }
 
     public Long getUserIdInt() {
-        return from.getId();
+        return Long.valueOf(from.getId());
     }
 
     public String getRoomId() {
