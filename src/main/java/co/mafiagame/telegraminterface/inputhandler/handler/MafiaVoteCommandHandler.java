@@ -34,6 +34,6 @@ public class MafiaVoteCommandHandler extends TelegramCommandHandler {
 
     @Override
     public void execute(TelegramInterfaceContext ic, String[] args) {
-        gameApi.mafiaKillVote(ic, ic.getFirstName(), args[0]);
+        gameApi.mafiaKillVote(ic, ic.getUserName(), args[0]);
     }
 }
