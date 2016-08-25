@@ -39,7 +39,7 @@ public class KillMeCommandHandler extends TelegramCommandHandler {
 
     @Override
     public void execute(TelegramInterfaceContext ic, String[] args) {
-        gameApi.whatIsMyRole(ic);
+        gameApi.killMe(ic);
         roomContainer.remove(ic.getUserName());
     }
 }
