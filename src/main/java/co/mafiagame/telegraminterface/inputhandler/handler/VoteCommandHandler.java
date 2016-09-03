@@ -36,6 +36,8 @@ public class VoteCommandHandler extends TelegramCommandHandler {
 
     @Override
     public void execute(TelegramInterfaceContext ic, String[] args) {
+        if (isCommandEnteredInPrivate(ic, "vote.not.allowed.in.private"))
+            return;
         gameApi.vote(ic, ic.getUserName(), Arrays.asList(args));
     }
 }

@@ -19,6 +19,8 @@
 package co.mafiagame.telegraminterface.inputhandler.handler;
 
 import co.mafiagame.common.Constants;
+import co.mafiagame.common.domain.result.Message;
+import co.mafiagame.common.domain.result.ResultMessage;
 import co.mafiagame.telegraminterface.RoomContainer;
 import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,8 @@ public class RegisterCommandHandler extends TelegramCommandHandler {
     @Override
     public void execute(TelegramInterfaceContext ic, String[] args) {
         if (!validateUsername(ic))
+            return;
+        if (isCommandEnteredInPrivate(ic, "register.not.allowed.in.private"))
             return;
         roomContainer.put(ic.getUserName(), ic.getIntRoomId());
         gameApi.register(ic, ic.getFirstName(), ic.getLastName());

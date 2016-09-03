@@ -34,6 +34,8 @@ public class CancelCommandHandler extends TelegramCommandHandler {
 
     @Override
     public void execute(TelegramInterfaceContext ic, String[] args) {
+        if (isCommandEnteredInPrivate(ic, "cancel.not.allowed.in.private"))
+            return;
         gameApi.cancelGame(ic, ic.getUserName());
     }
 }

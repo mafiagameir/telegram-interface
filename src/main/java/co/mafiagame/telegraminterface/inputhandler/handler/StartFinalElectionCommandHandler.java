@@ -34,6 +34,8 @@ public class StartFinalElectionCommandHandler extends TelegramCommandHandler {
 
     @Override
     public void execute(TelegramInterfaceContext ic, String[] args) {
+        if(isCommandEnteredInPrivate(ic,"start.final.election.not.allowed.in.private"))
+            return;
         gameApi.startFinalElection(ic);
     }
 }

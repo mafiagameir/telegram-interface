@@ -19,6 +19,7 @@
 package co.mafiagame.telegraminterface.inputhandler.handler;
 
 import co.mafiagame.common.channel.InterfaceChannel;
+import co.mafiagame.common.domain.result.ChannelType;
 import co.mafiagame.common.domain.result.Message;
 import co.mafiagame.common.domain.result.ResultMessage;
 import co.mafiagame.engine.api.GameApi;
@@ -47,6 +48,18 @@ public abstract class TelegramCommandHandler {
     protected abstract String getCommandString();
 
     public abstract void execute(TelegramInterfaceContext ic, String[] args);
+
+    protected boolean isCommandEnteredInPrivate(TelegramInterfaceContext ic,String message) {
+        if (ic.getSenderType() == ChannelType.USER_PRIVATE) {
+            interfaceChannel.send(
+                    new ResultMessage(
+                            new Message(message)
+                                    .setReceiverId(ic.getUserId()),
+                            ic.getSenderType(), ic));
+            return true;
+        }
+        return false;
+    }
 
     boolean validateUsername(TelegramInterfaceContext ic) {
         String username = ic.getUserName();

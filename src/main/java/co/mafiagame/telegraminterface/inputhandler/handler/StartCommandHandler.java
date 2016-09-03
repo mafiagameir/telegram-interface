@@ -41,18 +41,29 @@ public class StartCommandHandler extends TelegramCommandHandler {
 
     @Override
     public void execute(TelegramInterfaceContext ic, String[] args) {
-        roomContainer.put(ic.getUserName(), ic.getIntRoomId());
-        if (args.length < 4) {
-            interfaceChannel.send(
-                    new ResultMessage(new Message("welcome.message")
-                            .setReceiverId(ic.getUserId()),
-                            ic.getSenderType(), ic));
-            validateUsername(ic);
-        } else {
-            if (!validateUsername(ic))
+        if (args.length < 4)
+            handleStartUsingBot(ic);
+        else {
+            if (isCommandEnteredInPrivate(ic, "start.not.allowed.in.private"))
                 return;
-            gameApi.startStashedGame(ic, Integer.valueOf(args[0]), Integer.valueOf(args[1]),
-                    Integer.valueOf(args[2]), Integer.valueOf(args[3]));
+            handleStartStash(ic, args);
         }
+    }
+
+
+    private void handleStartStash(TelegramInterfaceContext ic, String[] args) {
+        if (!validateUsername(ic))
+            return;
+        roomContainer.put(ic.getUserName(), ic.getIntRoomId());
+        gameApi.startStashedGame(ic, Integer.valueOf(args[0]), Integer.valueOf(args[1]),
+                Integer.valueOf(args[2]), Integer.valueOf(args[3]));
+    }
+
+    private void handleStartUsingBot(TelegramInterfaceContext ic) {
+        interfaceChannel.send(
+                new ResultMessage(new Message("welcome.message")
+                        .setReceiverId(ic.getUserId()),
+                        ic.getSenderType(), ic));
+        validateUsername(ic);
     }
 }
