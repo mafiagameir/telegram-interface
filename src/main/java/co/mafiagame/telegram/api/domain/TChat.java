@@ -37,7 +37,7 @@ public class TChat {
 
     @JsonIgnore
     public ChannelType getChannelType() {
-        return title == null ? ChannelType.USER_PRIVATE : ChannelType.GENERAL;
+        return type.equalsIgnoreCase("private") ? ChannelType.USER_PRIVATE : ChannelType.GENERAL;
     }
 
     public Long getId() {
