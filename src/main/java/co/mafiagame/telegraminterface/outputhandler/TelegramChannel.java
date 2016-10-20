@@ -29,6 +29,7 @@ import co.mafiagame.telegraminterface.TelegramInterfaceContext;
 import co.mafiagame.telegraminterface.outputhandler.handler.DefaultOutputMessageHandler;
 import co.mafiagame.telegraminterface.outputhandler.handler.OutputMessageHandler;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -76,6 +77,7 @@ public class TelegramChannel implements InterfaceChannel {
 
     @PostConstruct
     private void init() {
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         client = HttpClients.createDefault();
         this.url = telegramUrl + telegramToken + "/sendMessage";
         TimerTask timerTask = new TimerTask() {
