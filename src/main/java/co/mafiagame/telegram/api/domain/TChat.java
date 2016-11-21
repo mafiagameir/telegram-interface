@@ -34,6 +34,8 @@ public class TChat {
     private String username;
     private String title;
     private String type;
+    @JsonProperty("all_members_are_administrators")
+    private String allMembersAreAdmins;
 
     @JsonIgnore
     public ChannelType getChannelType() {
@@ -88,6 +90,15 @@ public class TChat {
         this.type = type;
     }
 
+    public String getAllMembersAreAdmins() {
+        return allMembersAreAdmins;
+    }
+
+    public TChat setAllMembersAreAdmins(String allMembersAreAdmins) {
+        this.allMembersAreAdmins = allMembersAreAdmins;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "TChat{" +
@@ -97,6 +108,7 @@ public class TChat {
                 ", username='" + username + '\'' +
                 ", title='" + title + '\'' +
                 ", type='" + type + '\'' +
+                ", allMembersAreAdmins='" + allMembersAreAdmins + '\'' +
                 '}';
     }
 }
