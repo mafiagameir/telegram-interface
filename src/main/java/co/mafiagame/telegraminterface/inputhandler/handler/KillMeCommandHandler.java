@@ -39,8 +39,6 @@ public class KillMeCommandHandler extends TelegramCommandHandler {
 
     @Override
     public void execute(TelegramInterfaceContext ic, String[] args) {
-        if (isCommandEnteredInPrivate(ic, "kill.me.not.allowed.in.private"))
-            return;
         gameApi.killMe(ic);
         roomContainer.remove(ic.getUserName());
     }
